@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
 using namespace std;
 
 int main(int argc, char **argv){
@@ -79,4 +80,28 @@ int main(int argc, char **argv){
         return 0;
     }
 
+
+    int size = widthValue*widthValue;
+    cout << "Size " <<size <<endl;
+    cout << "Filename " << inputFile <<endl;
+    vector<uint8_t> buffer(size);
+    unsigned char buffer2[size];
+
+    //Open file
+    std::ifstream f(inputFile, ios::binary);
+    while (!f.eof())
+    {
+        f.read(reinterpret_cast<char*>(buffer.data()), size);
+    }
+    f.close(); 
+    
+    for(int i = 0; i < size; i++)
+    {
+        uint8_t value = buffer[i]; // Get the value at the current position
+        std::cout << "Value: " << static_cast<int>(value) << std::endl;
+    }
+    
+
+
+    return 0;
 }
