@@ -1,17 +1,20 @@
 //Projekt do KKO 2023, VUT FIT, Vojtěch Šíma, xsimav01
+//./huff_codec -c -w 512 -i df1h.raw -o out.txt
+
 #include <iostream>
 #include <fstream>
 #include <getopt.h>
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <cstdint> 
 using namespace std;
 
 int main(int argc, char **argv){
     int c;
     string inputFile = "";
     string outputFile = "";
-    int widthValue = 0;
+    uint16_t widthValue = 0;
     bool comp = false;
     bool decomp = false;
     bool model = false;
@@ -45,7 +48,7 @@ int main(int argc, char **argv){
                 break;
 
             case 'w':
-                widthValue = atoi(optarg);
+                widthValue = (uint16_t)atoi(optarg);
                 break; 
 
             case 'h':
@@ -80,28 +83,43 @@ int main(int argc, char **argv){
         return 0;
     }
 
-
-    int size = widthValue*widthValue;
+    uint32_t size = widthValue *widthValue ;
+   
     cout << "Size " <<size <<endl;
     cout << "Filename " << inputFile <<endl;
-    vector<uint8_t> buffer(size);
-    unsigned char buffer2[size];
 
+    uint8_t buffer[size];
+    uint32_t cetnosti[256] = {0};
+    float pravdepodobnosti[256] = {0.0};
     //Open file
     std::ifstream f(inputFile, ios::binary);
     while (!f.eof())
     {
-        f.read(reinterpret_cast<char*>(buffer.data()), size);
+        f.read(reinterpret_cast<char*>(buffer), size);
     }
     f.close(); 
-    
-    for(int i = 0; i < size; i++)
+    int q = 0;
+    int sum = 0;
+    for(uint32_t i = 0; i < size; i++)
     {
-        uint8_t value = buffer[i]; // Get the value at the current position
-        std::cout << "Value: " << static_cast<int>(value) << std::endl;
+        cetnosti[+buffer[i]] = cetnosti[+buffer[i]] + 1 ; 
+        q++;
+        sum = sum + (+buffer[i]);
     }
-    
 
-
+    uint32_t test = 0;
+    float fl = 0.0;
+    for(uint16_t i = 0; i < 256; i++)
+    {
+        // std::cout << i << " " << cetnosti[i] << std::endl;
+        // cout << i <<"  "<< +test << " + " << (cetnosti[i]);
+        // test = test +  (cetnosti[i]);
+        // cout <<" = " <<test<<endl;
+        pravdepodobnosti[i] =  cetnosti[i] / (float)size;
+        fl = fl + pravdepodobnosti[i];
+        cout << pravdepodobnosti[i] << endl;
+    }
+    cout << "f  " << fl;
+    //cout << "\navg " << sum/size;
     return 0;
 }
