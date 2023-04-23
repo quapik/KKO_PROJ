@@ -12,46 +12,87 @@
 #include <limits.h>
 using namespace std;
 
+bool isin(uint16_t elem, const uint16_t* arr, size_t size) 
+{
+    for (size_t i = 0; i < size; i++) {
+        if (arr[i] == elem) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint16_t ignore[]) {
+
+    if (sizehalfheap-1-poradi < 1)
+    {
+        return;
+    }
+
+    cout << "testuju ";
+   for(int i = 0; i <sizehalfheap-1-poradi; i++)
+   {
+    cout << heap[i] << ",";
+   }
+   cout << "CISLO" << sizehalfheap-1-poradi << endl;
+    cout << "MAM ";
+   for(int i = 0; i <sizehalfheap*2; i++)
+   {
+    cout << heap[i] << ",";
+   }
+    cout << endl;
 
    uint32_t extracted_min = heap[heap[0]];
    uint32_t extracted_min2 = heap[heap[1]];
    uint16_t heapinddex = sizehalfheap-poradi-1;
+   uint16_t ignore_minima[256] = {0};
    ignore[poradi*2] = heap[0];
    ignore[poradi*2+1] = heap[1];
    extracted_min = extracted_min + extracted_min2;
    heap[sizehalfheap-poradi-1] = extracted_min;
+
+    if(sizehalfheap-1-poradi == 1)
+    {   
+        cout << "HEAP0 " <<  heap[heap[0]] << " HEAP1 " << heap[heap[1]] << endl;
+        heap[heap[0]] = heapinddex;
+        heap[heap[1]] = heapinddex;
+
+    }
    heap[heap[0]] = heapinddex;
    heap[heap[1]] = heapinddex;
    heap[0] = heapinddex;
 
-   extracted_min  = INT_MAX;
    for(uint16_t i = 0; i <sizehalfheap-1-poradi; i++)
    {    
+        extracted_min  = INT_MAX;
         for(uint16_t j = sizehalfheap-1-poradi; j < sizehalfheap*2; j++)
         {
             if(heap[j] < extracted_min)
             {
-            uint16_t *index = find(ignore, ignore + 512, heap[j]);
-            uint16_t *end = ignore + 512;
-            if (index == end)
+            bool isin1 = isin(j, ignore, 512);
+            bool isin2 = isin(j, ignore_minima, 256);
+            if (!isin1 && !isin2)
             {
                 extracted_min = heap[j];
                 heapinddex = j;
+                //cout << "nalezeno minimum " << heap[j] <<  " index " << j << endl;
+    
             }
             }
         }
+        //cout << "MIN" << extracted_min;
         heap[i] = heapinddex;
+        ignore_minima[i] = heapinddex;
    }
+   
+    for(uint32_t i = 0; i < sizehalfheap*2; i++)
+    {
+        cout << heap[i] << ",";
+    }
+    cout <<endl;
+     cout << endl;
+   heapwork(heap,sizehalfheap, poradi+1, ignore);
 }
-
-// uint32_t findmin(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t ignore[], uint32_t ignorerazeni[])
-// {
-//     for(int i = sizehalfheap-1-poradi; < sizehalfheap*2; i++)
-//     {
-        
-//     }
-// }
 
 int main(int argc, char **argv){
     int c;
@@ -204,14 +245,6 @@ int main(int argc, char **argv){
 
     uint16_t empty[512] = {0};
     heapwork(heap, sizetest, 0, empty);
-    cout << "FCE\n";
-    for(uint32_t i = 0; i < sizetest*2; i++)
-    {
-        cout << heap[i] << ",";
-    }
-    cout <<endl;
-
-
     return 0;
 }
 
