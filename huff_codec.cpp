@@ -29,13 +29,12 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint16_t 
         return;
     }
 
-    cout << "testuju ";
+    cout << "testuju1 ";
    for(int i = 0; i <sizehalfheap-1-poradi; i++)
    {
     cout << heap[i] << ",";
    }
-   cout << "CISLO" << sizehalfheap-1-poradi << endl;
-    cout << "MAM ";
+    cout << "    MAM ";
    for(int i = 0; i <sizehalfheap*2; i++)
    {
     cout << heap[i] << ",";
@@ -43,37 +42,40 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint16_t 
     cout << endl;
 
    uint32_t extracted_min = heap[heap[0]];
-   uint32_t extracted_min2 = heap[heap[1]];
+   cout << "MIN1 " << extracted_min << endl;
+   //uint32_t extracted_min2 = heap[heap[1]];
    uint16_t heapinddex = sizehalfheap-poradi-1;
    uint16_t ignore_minima[256] = {0};
    ignore[poradi*2] = heap[0];
-   ignore[poradi*2+1] = heap[1];
-   extracted_min = extracted_min + extracted_min2;
-   heap[sizehalfheap-poradi-1] = extracted_min;
+   //ignore[poradi*2+1] = heap[1];
+   //extracted_min = extracted_min + extracted_min2;
+   //heap[sizehalfheap-poradi-1] = extracted_min;
+   heap[sizehalfheap-poradi-1] = INT_MAX;
+    cout << "UPRAVENY ";
+   for(int i = 0; i <sizehalfheap*2; i++)
+   {
+    cout << heap[i] << ",";
+   }
+    cout << endl<< "-------------------------------" << endl;
 
-    if(sizehalfheap-1-poradi == 1)
-    {   
-        cout << "HEAP0 " <<  heap[heap[0]] << " HEAP1 " << heap[heap[1]] << endl;
-        heap[heap[0]] = heapinddex;
-        heap[heap[1]] = heapinddex;
 
-    }
+
    heap[heap[0]] = heapinddex;
-   heap[heap[1]] = heapinddex;
-   heap[0] = heapinddex;
-
+   //heap[heap[1]] = heapinddex;
+   //heap[0] = heapinddex;
+   uint32_t find_min;
    for(uint16_t i = 0; i <sizehalfheap-1-poradi; i++)
    {    
-        extracted_min  = INT_MAX;
-        for(uint16_t j = sizehalfheap-1-poradi; j < sizehalfheap*2; j++)
+        find_min  = INT_MAX;
+        for(uint16_t j = sizehalfheap-1-poradi+1; j < sizehalfheap*2; j++)
         {
-            if(heap[j] < extracted_min)
+            if(heap[j] < find_min)
             {
             bool isin1 = isin(j, ignore, 512);
             bool isin2 = isin(j, ignore_minima, 256);
             if (!isin1 && !isin2)
             {
-                extracted_min = heap[j];
+                find_min = heap[j];
                 heapinddex = j;
                 //cout << "nalezeno minimum " << heap[j] <<  " index " << j << endl;
     
@@ -84,7 +86,58 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint16_t 
         heap[i] = heapinddex;
         ignore_minima[i] = heapinddex;
    }
-   
+    heapinddex = sizehalfheap-poradi-1;
+   ignore[poradi*2+1] = heap[0];
+
+     cout << "testuju2 ";
+   for(int i = 0; i <sizehalfheap-1-poradi; i++)
+   {
+    cout << heap[i] << ",";
+   }
+    cout << "    MAM ";
+   for(int i = 0; i <sizehalfheap*2; i++)
+   {
+    cout << heap[i] << ",";
+   }
+    cout << endl;
+   uint32_t extracted_min2 = heap[heap[0]];
+   uint16_t ignore_minima2[256] = {0};
+    cout << "MIN2 " << extracted_min2 << endl;
+   extracted_min = extracted_min + extracted_min2;
+   heap[sizehalfheap-poradi-1] = extracted_min;
+   heap[heap[0]] = heapinddex;
+   heap[0] = heapinddex;
+    cout << "UPRAVENY ";
+   for(int i = 0; i <sizehalfheap*2; i++)
+   {
+    cout << heap[i] << ",";
+   }
+    cout << endl<< "-------------------------------" << endl;
+
+
+   for(uint16_t i = 0; i <sizehalfheap-1-poradi; i++)
+   {    
+        find_min  = INT_MAX;
+        for(uint16_t j = sizehalfheap-1-poradi; j < sizehalfheap*2; j++)
+        {
+            if(heap[j] < find_min)
+            {
+            bool isin1 = isin(j, ignore, 512);
+            bool isin2 = isin(j, ignore_minima2, 256);
+            if (!isin1 && !isin2)
+            {
+                find_min = heap[j];
+                heapinddex = j;
+                //cout << "nalezeno minimum " << heap[j] <<  " index " << j << endl;
+    
+            }
+            }
+        }
+        //cout << "MIN" << extracted_min << endl;
+        heap[i] = heapinddex;
+        ignore_minima2[i] = heapinddex;
+   }
+    cout << "FINAL     ";
     for(uint32_t i = 0; i < sizehalfheap*2; i++)
     {
         cout << heap[i] << ",";
