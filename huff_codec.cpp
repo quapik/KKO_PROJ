@@ -159,7 +159,7 @@ void bubble_sort (uint32_t delky_sorted[], uint32_t indexy_sort_delky[], uint32_
 }
 
 int main(int argc, char **argv){
-    int c;
+    int argument;
     string inputFile = "";
     string outputFile = "";
     uint16_t widthValue = 0;
@@ -167,9 +167,9 @@ int main(int argc, char **argv){
     bool decomp = false;
     bool model = false;
     bool adapt = false;
-    while ((c = getopt(argc, argv, "cdmai:o:w:h")) != -1) 
+    while ((argument = getopt(argc, argv, "cdmai:o:w:h")) != -1) 
     {
-        switch (c) 
+        switch (argument) 
         {
             case 'c':
                 comp = true;
@@ -229,17 +229,16 @@ int main(int argc, char **argv){
     cout << "Size " <<size <<endl;
     cout << "Filename " << inputFile <<endl;
 
-    uint8_t buffer[size];
-    uint32_t cetnosti[256] = {0};
-    float pravdepodobnosti[256] = {0.0};
+    // uint8_t buffer[size];
+    // uint32_t cetnosti[256] = {0};
+    // float pravdepodobnosti[256] = {0.0};
     
-    //Open file
-    std::ifstream fin(inputFile, ios::binary);
-    while (!fin.eof())
-    {
-        fin.read(reinterpret_cast<char*>(buffer), size);
-    }
-    fin.close(); 
+    // std::ifstream fin(inputFile, ios::binary);
+    // while (!fin.eof())
+    // {
+    //     fin.read(reinterpret_cast<char*>(buffer), size);
+    // }
+    // fin.close(); 
 
     // ZAPIS DO SOUBORU 
     // ofstream fout(outputFile, ios::binary | ios::trunc);
@@ -250,78 +249,136 @@ int main(int argc, char **argv){
     // fout.write(reinterpret_cast<char*>(buffer), size);
     // fout.close();
 
-    for(uint32_t i = 0; i < size; i++)
-    {
-        cetnosti[+buffer[i]] = cetnosti[+buffer[i]] + 1 ; 
-    }
+    // for(uint32_t i = 0; i < size; i++)
+    // {
+    //     cetnosti[+buffer[i]] = cetnosti[+buffer[i]] + 1 ; 
+    // }
 
-    // uint32_t sizetest = 7;
-    // uint32_t cet_puvodni[sizetest] = {25,20,13,17,9,11,5}; //{15,12,7,10,5,6,2};
-    // uint32_t cet_sort[sizetest] = {0};
-    // uint32_t heap[sizetest*2] = {0};
+    // uint32_t velikostpole = 7;
+    // uint32_t cet_puvodni[velikostpole] = {25,20,13,17,9,11,5}; //{15,12,7,10,5,6,2};
+    // uint32_t cet_sort[velikostpole] = {0};
+    // uint32_t heap[velikostpole*2] = {0};
 
-    uint32_t sizetest = 256;
-    // uint32_t cetnosti[sizetest] = {10,1,15,7};
-    uint32_t cet_sort[sizetest] = {0};
-    uint32_t heap[sizetest*2] = {0};
+    uint32_t velikostpole = 4;
+    uint32_t cetnosti[velikostpole] = {10,1,15,7};
+    uint32_t cet_sort[velikostpole] = {0};
+    uint32_t heap[velikostpole*2] = {0};
 
     //Uložení četností do druhé poloviny heapu a kopírování pole pro řazení
-    for (uint32_t i = 0; i < sizetest; i++)
+    for (uint32_t i = 0; i < velikostpole; i++)
     {
-            heap[sizetest+i] = cetnosti[i];
+            heap[velikostpole+i] = cetnosti[i];
             cet_sort[i] = cetnosti[i];
     }
 
-    sort(cet_sort, cet_sort + sizetest);
+    sort(cet_sort, cet_sort + velikostpole);
     //Najdi vždy ity nejmenší prvek, zjisti jeho index a ten ulož na itou pozici v heapu
-    for(int i = 0; i < sizetest; i++)
+    for(int i = 0; i < velikostpole; i++)
     {
         uint32_t smallest = cet_sort[i];
-        auto index_p = find(cetnosti,cetnosti + sizetest, smallest);
+        auto index_p = find(cetnosti,cetnosti + velikostpole, smallest);
         uint32_t index_value = distance(cetnosti, index_p);
-        heap[i] = index_value+sizetest;
+        heap[i] = index_value+velikostpole;
     }
     // cout << endl;
     // cout << "BEGIN  ";
-    // for(uint32_t i = 0; i < sizetest*2; i++)
+    // for(uint32_t i = 0; i < velikostpole*2; i++)
     // {
     //     cout << heap[i] << ",";
-    //     if (i == sizetest-1) cout << "   ";
+    //     if (i == velikostpole-1) cout << "   ";
     // }
     // cout <<endl;
 
     uint16_t empty[512] = {0};
-    heapwork(heap, sizetest, 0, empty);
-    vypocetdelek(heap, sizetest);
-    uint32_t delky[sizetest] = {0};
-    uint32_t delky_sorted[sizetest] = {0};
-    uint32_t indexy_sort_delky[sizetest]  = {0};
-    for(uint32_t i = 0; i <sizetest; i++)
+    heapwork(heap, velikostpole, 0, empty);
+    vypocetdelek(heap, velikostpole);
+    uint32_t delky[velikostpole] = {0};
+    uint32_t delky_sorted[velikostpole] = {0};
+    uint32_t indexy_sort_delky[velikostpole]  = {0};
+    for(uint32_t i = 0; i <velikostpole; i++)
     {
-        delky[i] = heap[sizetest+i];
-        delky_sorted[i] = heap[sizetest+i];
+        delky[i] = heap[velikostpole+i];
+        delky_sorted[i] = heap[velikostpole+i];
         indexy_sort_delky[i] = i;
     }
-    bubble_sort(delky_sorted, indexy_sort_delky, sizetest);
+    bubble_sort(delky_sorted, indexy_sort_delky, velikostpole);
 
-    for(uint32_t i = 0; i <sizetest; i++)
-    {
-        cout << delky_sorted[i] << ", ";
-    }
-    cout << endl;
-
-    uint32_t huffmancode[sizetest] = {0};
+    uint32_t huffmancode[velikostpole] = {0};
     uint16_t delta = 0;
     uint32_t huff_value = 0;
-    cout << indexy_sort_delky[0] << "VALUE " << huff_value <<endl;
+    //cout << indexy_sort_delky[0] << "VALUE " << huff_value <<endl;
     huffmancode[0] = huff_value;
-    for(int i = 1; i <sizetest; i++)
+
+    for(int i = 1; i <velikostpole; i++)
     {
         delta = delky_sorted[i] - delky_sorted[i-1];
         huff_value = (huff_value+1)<<delta;
         huffmancode[i] = huff_value;
-        cout << indexy_sort_delky[i] << "VALUE " << huff_value <<endl;
+        //cout << indexy_sort_delky[i] << "VALUE " << huff_value <<endl;
     }
+
+    uint16_t rozdilne_delky_counter = 0;
+    uint16_t rozdilne_delky[velikostpole] = {0};
+    uint16_t poctydelek[velikostpole] = {0};
+    uint16_t buffer_zacatek_souboru[1 + velikostpole*2] {0};
+    for(uint32_t i = 0; i <velikostpole; i++)
+    {
+        bool isdelkain = isin(delky_sorted[i], rozdilne_delky, velikostpole);
+        poctydelek[delky_sorted[i]-1]++;
+        if(!isdelkain)
+        {
+            rozdilne_delky_counter++;
+            rozdilne_delky[i] = delky_sorted[i]; 
+        }
+
+    }
+    buffer_zacatek_souboru[0] = rozdilne_delky_counter;
+    for(uint32_t i = 0; i <velikostpole; i++)
+    {   
+        buffer_zacatek_souboru[1+i] = poctydelek[i];
+        buffer_zacatek_souboru[1+i+velikostpole] = indexy_sort_delky[i];
+    }
+
+    //DECODE
+    cout << "\nDECODE\n";
+    uint16_t decode_N = buffer_zacatek_souboru[0];
+    
+    //CREATE FIRST SYMBOL AND FIRST CODE
+    uint16_t firstCode[decode_N+1] = {0};
+    uint16_t firstSymbol[decode_N+1] = {0};
+
+    int c = 0;
+    int s = 0;
+    for(int i = 0; i <decode_N+1; i++)
+    {
+        firstCode[i] = c;
+        firstSymbol[i] = s;
+        s = s + (buffer_zacatek_souboru[i+1]);
+        c = (c+(buffer_zacatek_souboru[i+1]-1)+1)<<1;
+    }
+    int testinpuit = 0b110110011110;
+
+    
+    //DECODE function
+    uint16_t cd = 0;
+    uint16_t l = 0;
+      for(int i = 0; i<12; i++)
+      {
+        l = l+1;
+        bool  bit = testinpuit & (1 << (12 - i - 1));
+        cd = (cd<<1) + bit;
+
+        if((cd<<1)<firstCode[l+1-1])
+        {
+            //TOTO JSOU INDEXY na to co ukazuje při tom poslání
+            cout << firstSymbol[l-1] + cd -firstCode[l-1] << ",";
+            l =0;
+            cd= 0;
+        }
+
+      }
+
+
     return 0;
 
 }
