@@ -10,6 +10,8 @@
 #include <cstdint> 
 #include <algorithm>
 #include <limits.h>
+
+#include <bitset>
 using namespace std;
 
 //Funkce která vrací true pokud se hodnota vyskytuje v poli
@@ -291,14 +293,6 @@ int main(int argc, char **argv){
         uint32_t index_value = distance(cetnosti_beznul, index_p);
         heap[i] = index_value+velikostpole;
     }
-    // cout << endl;
-    // cout << "BEGIN  ";
-    // for(uint32_t i = 0; i < velikostpole*2; i++)
-    // {
-    //     cout << heap[i] << ",";
-    //     if (i == velikostpole-1) cout << "   ";
-    // }
-    // cout <<endl;
 
     uint16_t empty[512] = {0};
     heapwork(heap, velikostpole, 0, empty);
@@ -383,7 +377,7 @@ int main(int argc, char **argv){
     fout.write(reinterpret_cast<const char*>(&velikosdtpole_poctydelek), sizeof(velikosdtpole_poctydelek)); 
     fout.write((char*)&pole_poctydelek, sizeof(pole_poctydelek));
     fout.write((char*)&indexy_sort_delky, sizeof(indexy_sort_delky));
-    fout.close();
+    
 
      for(uint32_t i = 0; i <sizeof(indexy_sort_delky); i++)
      {
@@ -392,21 +386,70 @@ int main(int argc, char **argv){
      cout << endl;
 
     uint8_t bytewrite = 0;
+    uint8_t volnebity = 8;
     uint8_t lenght =0;
     uint8_t in = 0;
+    bool msb;
 
-    for(int i = 0; i< size; i++)
+    for(uint32_t  i = 0; i< size; i++)
     {
         cout << +buffer[i];
         in = returnIndex(indexy_sort_delky,buffer[i],sizeof(indexy_sort_delky));
-        cout << " " << huffmancode[in] <<endl;
+        huff_value = huffmancode[in];
+        lenght = delky_sorted[in];
+        //std::bitset<32> binary_representation(huff_value);
+        //cout << " " << binary_representation << " ";
+        huff_value = huff_value << (32-lenght);
+        //std::bitset<32> binary_representation2(huff_value);
+        //cout << " " << binary_representation2 << " ";
+        //cout << " " << huff_value  << "  "<<+lenght << endl;
+        for(uint16_t j = 0; j < lenght; j++)
+        {
+            if(volnebity > 0)
+            {   
+                msb = huff_value & 0x80000000;
+                std::bitset<8> binary_representation(bytewrite);
+                std::bitset<32> binary_representation2(huff_value);
+                bytewrite = bytewrite << 1;
+                cout << " " << binary_representation << " " << binary_representation2;
+
+                if(msb)
+                {
+                    bytewrite = bytewrite |  0b00000001;
+                }
+                huff_value = huff_value << 1;
+                volnebity--;
+                if (volnebity == 0)
+                {
+                    cout << " WRITE!!";
+                    fout.write(reinterpret_cast<const char*>(&bytewrite), 1); 
+                    volnebity = 8;
+                    bytewrite  = 0;
+                }
+                
+            }
+            cout << endl;
+        } 
     }
+    cout << "VOLNE BITY" << +volnebity << endl;
+    bytewrite = bytewrite << volnebity;
+    std::bitset<8> binary_representation3(bytewrite);
+    cout << binary_representation3;
+    fout.write(reinterpret_cast<const char*>(&bytewrite), 1);
+    volnebity = 8 - volnebity; 
+    fout.write(reinterpret_cast<const char*>(&volnebity), 1);
+    fout.close();
 
 
     //DECODE
     cout << "\nDECODE\n";
 
     uint8_t decode_N = 0;
+
+    std::ifstream findecodesize("out", std::ios::ate | std::ios::binary );
+    std::streampos fsize = findecodesize.tellg();
+    findecodesize.close();
+    cout << "FILE SIZE " << fsize <<endl;
 
     std::ifstream findecode("out", ios::binary);
 
@@ -426,42 +469,61 @@ int main(int argc, char **argv){
     findecode.read(reinterpret_cast<char*>(znaky_decode), pocetznaku_decode);
 
     cout <<endl;
+   
+
+    cout << "1+" << +decode_N <<"+" << +pocetznaku_decode <<" = " << 1+decode_N+pocetznaku_decode<<endl;
+    uint32_t pocet_bytu =  static_cast<uint32_t>(fsize) -(1+decode_N+pocetznaku_decode);
+    cout << "POCET BYTU "<<pocet_bytu<<endl;
+    uint8_t decode_bytes[pocet_bytu]= {0};
+    findecode.read(reinterpret_cast<char*>(decode_bytes), pocet_bytu);
     findecode.close(); 
+    uint8_t pocet_uzitecnych_posledni_byte = decode_bytes[pocet_bytu-1];
+
+    //CREATE FIRST SYMBOL AND FIRST CODE
+    uint16_t firstCode[decode_N+1] = {0};
+    uint16_t firstSymbol[decode_N+1] = {0};
+
+    int c = 0;
+    int s = 0;
+    for(int i = 0; i <decode_N+1; i++)
+    {
+        firstCode[i] = c;
+        firstSymbol[i] = s;
+        s = s + (pole_poctydelek_decode[i]);
+        c = (c+(pole_poctydelek_decode[i]-1)+1)<<1;
+    }
+    uint8_t byteread;
     
-    // //CREATE FIRST SYMBOL AND FIRST CODE
-    // uint16_t firstCode[decode_N+1] = {0};
-    // uint16_t firstSymbol[decode_N+1] = {0};
-
-    // int c = 0;
-    // int s = 0;
-    // for(int i = 0; i <decode_N+1; i++)
-    // {
-    //     firstCode[i] = c;
-    //     firstSymbol[i] = s;
-    //     s = s + (buffer_zacatek_souboru[i+1]);
-    //     c = (c+(buffer_zacatek_souboru[i+1]-1)+1)<<1;
-    // }
-    // int testinpuit = 0b110110011110;
-
+    //DECODE function
+    uint16_t cd = 0;
+    uint16_t l = 0;
+    bool msb_decode;
+    ofstream finalout("out.raw", ios::binary | ios::trunc);
     
-    // //DECODE function
-    // uint16_t cd = 0;
-    // uint16_t l = 0;
-    //   for(int i = 0; i<12; i++)
-    //   {
-    //     l = l+1;
-    //     bool  bit = testinpuit & (1 << (12 - i - 1));
-    //     cd = (cd<<1) + bit;
+      for(int i = 0; i<pocet_bytu-1; i++)
+      {
+        byteread = decode_bytes[i];
 
-    //     if((cd<<1)<firstCode[l+1-1])
-    //     {
-    //         //TOTO JSOU INDEXY na to co ukazuje při tom poslání
-    //         cout << firstSymbol[l-1] + cd -firstCode[l-1] << ",";
-    //         l =0;
-    //         cd= 0;
-    //     }
+        uint8_t projdibytu = 8;
+        if (i== (pocet_bytu-2)) projdibytu = pocet_uzitecnych_posledni_byte;
 
-    //   }
+        for(int j = 0; j<projdibytu; j++)
+        {
+            l = l+1;
+            msb_decode = byteread & 0b10000000;
+            byteread = byteread << 1;
+            cd = (cd<<1) + msb_decode;
 
+            if((cd<<1)<firstCode[l+1-1])
+            {
+                //TOTO JSOU INDEXY na to co ukazuje při tom poslání
+                cout << +znaky_decode[firstSymbol[l-1] + cd -firstCode[l-1]] << ",";
+                finalout.write((char*)&znaky_decode[firstSymbol[l-1] + cd -firstCode[l-1]], 1);
+                l =0;
+                cd= 0;
+            }
+        }  
+      }
+    finalout.close();
     return 0;
 }
