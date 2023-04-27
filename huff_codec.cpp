@@ -12,6 +12,7 @@
 #include <limits.h>
 using namespace std;
 
+//Funkce která vrací true pokud se hodnota vyskytuje v poli
 bool isin(uint16_t elem, const uint16_t* arr, size_t size) 
 {
     for (size_t i = 0; i < size; i++) {
@@ -27,13 +28,6 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint16_t 
     //Ukonči tvoření heapu ve správnou chvíli
     if (sizehalfheap-1-poradi < 1)
     {
-        // cout << "FINAL  ";
-        // for(uint32_t i = 0; i < sizehalfheap*2; i++)
-        // {
-        //     cout << heap[i] << ",";
-        //     if (i == sizehalfheap-1) cout << "   ";
-        // }
-        // cout <<endl;
         return;
     }
     //Ulož si ze seřazené heapy nejmenší prvek a index, kam se bude později ukládat výsledek
@@ -124,18 +118,9 @@ void vypocetdelek(uint32_t heap[], uint32_t sizehalfheap)
         }
     heap[i] = delka;
     }
-
-    // cout << endl;
-    // cout << "DELKY  ";
-    // for(uint32_t i = 0; i < sizehalfheap*2; i++)
-    // {
-    //     cout << heap[i] << ",";
-    //     if (i == sizehalfheap-1) cout << "   ";
-    // }
-    // cout <<endl;
 }
 
-void bubble_sort (uint32_t delky_sorted[], uint32_t indexy_sort_delky[], uint32_t pocethodnot) 
+void bubble_sort (uint8_t delky_sorted[], uint8_t indexy_sort_delky[], uint8_t pocethodnot) 
 {
     int temp;
     for ( int i = 0; i < pocethodnot; i++ ) 
@@ -156,6 +141,18 @@ void bubble_sort (uint32_t delky_sorted[], uint32_t indexy_sort_delky[], uint32_
                 }
             }
         }
+}
+
+uint8_t returnIndex(uint8_t arr[], uint8_t val, uint8_t len)
+{
+    for(uint8_t i = 0; i <len; i++)
+    {
+        if(arr[i] == val)
+        {
+            return i;
+        }
+    }
+    return 0;
 }
 
 int main(int argc, char **argv){
@@ -225,50 +222,64 @@ int main(int argc, char **argv){
     }
 
     uint32_t size = widthValue *widthValue ;
-   
     cout << "Size " <<size <<endl;
     cout << "Filename " << inputFile <<endl;
-
-    // uint8_t buffer[size];
-    // uint32_t cetnosti[256] = {0};
-    // float pravdepodobnosti[256] = {0.0};
+    uint8_t buffer[size];
+    uint32_t cetnosti[256] = {0};
     
-    // std::ifstream fin(inputFile, ios::binary);
-    // while (!fin.eof())
-    // {
-    //     fin.read(reinterpret_cast<char*>(buffer), size);
-    // }
-    // fin.close(); 
+    //Otevři soubor a do bufferu nahraj všechny hodnoty 0-255
+    std::ifstream fin(inputFile, ios::binary);
+    while (!fin.eof())
+    {
+        fin.read(reinterpret_cast<char*>(buffer), size);
+    }
+    fin.close(); 
 
-    // ZAPIS DO SOUBORU 
-    // ofstream fout(outputFile, ios::binary | ios::trunc);
-    // if (!fout.is_open()) {
-    //     cout << "Failed to open file for writing!" << endl;
-    //     return 1;
-    // }
-    // fout.write(reinterpret_cast<char*>(buffer), size);
-    // fout.close();
+    //Procházení četností a uložení toho, kolikrát se dané hodnoty 
+    for(uint32_t i = 0; i < size; i++)
+    {
+        cetnosti[+buffer[i]] = cetnosti[+buffer[i]] + 1 ; 
+    }
+    uint16_t nenulove_cetnosti = 0;
 
-    // for(uint32_t i = 0; i < size; i++)
-    // {
-    //     cetnosti[+buffer[i]] = cetnosti[+buffer[i]] + 1 ; 
-    // }
+    //Zjištění kolik je nenulových četnosti (nulové se vynechají)
+    for(uint32_t i = 0; i < 256; i++)
+    {
+        if (cetnosti[i] != 0) nenulove_cetnosti++;
+    }
 
+
+    //Upravení na pouze nenulové hodnoty, uložení indexů kdy index má v sobě odkaz na původní 0-255 hodnotu
+    uint32_t cetnosti_beznul[nenulove_cetnosti] = {0};
+    uint32_t indexy_beznul[nenulove_cetnosti] = {0};
+    uint8_t offset_index = 0;
+
+    for(uint32_t i = 0; i < 256; i++)
+    {   
+        cout << cetnosti[i] << ",";
+        if (cetnosti[i] != 0)
+        {
+            cetnosti_beznul[+offset_index] = cetnosti[i];
+            indexy_beznul[+offset_index] = i;
+            offset_index++;
+        }
+    }
+    cout << endl;
     // uint32_t velikostpole = 7;
     // uint32_t cet_puvodni[velikostpole] = {25,20,13,17,9,11,5}; //{15,12,7,10,5,6,2};
     // uint32_t cet_sort[velikostpole] = {0};
     // uint32_t heap[velikostpole*2] = {0};
 
-    uint32_t velikostpole = 4;
-    uint32_t cetnosti[velikostpole] = {10,1,15,7};
+    uint32_t velikostpole = nenulove_cetnosti;
+    //uint32_t cetnosti[velikostpole] = {10,1,15,7};
     uint32_t cet_sort[velikostpole] = {0};
     uint32_t heap[velikostpole*2] = {0};
 
     //Uložení četností do druhé poloviny heapu a kopírování pole pro řazení
     for (uint32_t i = 0; i < velikostpole; i++)
     {
-            heap[velikostpole+i] = cetnosti[i];
-            cet_sort[i] = cetnosti[i];
+            heap[velikostpole+i] =  cetnosti_beznul[i];
+            cet_sort[i] =  cetnosti_beznul[i];
     }
 
     sort(cet_sort, cet_sort + velikostpole);
@@ -276,8 +287,8 @@ int main(int argc, char **argv){
     for(int i = 0; i < velikostpole; i++)
     {
         uint32_t smallest = cet_sort[i];
-        auto index_p = find(cetnosti,cetnosti + velikostpole, smallest);
-        uint32_t index_value = distance(cetnosti, index_p);
+        auto index_p = find(cetnosti_beznul, cetnosti_beznul + velikostpole, smallest);
+        uint32_t index_value = distance(cetnosti_beznul, index_p);
         heap[i] = index_value+velikostpole;
     }
     // cout << endl;
@@ -292,14 +303,14 @@ int main(int argc, char **argv){
     uint16_t empty[512] = {0};
     heapwork(heap, velikostpole, 0, empty);
     vypocetdelek(heap, velikostpole);
-    uint32_t delky[velikostpole] = {0};
-    uint32_t delky_sorted[velikostpole] = {0};
-    uint32_t indexy_sort_delky[velikostpole]  = {0};
+    uint8_t delky[velikostpole] = {0};
+    uint8_t delky_sorted[velikostpole] = {0};
+    uint8_t indexy_sort_delky[velikostpole]  = {0};
     for(uint32_t i = 0; i <velikostpole; i++)
     {
         delky[i] = heap[velikostpole+i];
         delky_sorted[i] = heap[velikostpole+i];
-        indexy_sort_delky[i] = i;
+        indexy_sort_delky[i] =  indexy_beznul[i];
     }
     bubble_sort(delky_sorted, indexy_sort_delky, velikostpole);
 
@@ -317,10 +328,12 @@ int main(int argc, char **argv){
         //cout << indexy_sort_delky[i] << "VALUE " << huff_value <<endl;
     }
 
-    uint16_t rozdilne_delky_counter = 0;
+    uint8_t rozdilne_delky_counter = 0;
     uint16_t rozdilne_delky[velikostpole] = {0};
     uint16_t poctydelek[velikostpole] = {0};
     uint16_t buffer_zacatek_souboru[1 + velikostpole*2] {0};
+
+    //TODO TOTO VYPADA ZE VUBEC NEPOTREBUJES?
     for(uint32_t i = 0; i <velikostpole; i++)
     {
         bool isdelkain = isin(delky_sorted[i], rozdilne_delky, velikostpole);
@@ -330,55 +343,125 @@ int main(int argc, char **argv){
             rozdilne_delky_counter++;
             rozdilne_delky[i] = delky_sorted[i]; 
         }
+    }
 
-    }
-    buffer_zacatek_souboru[0] = rozdilne_delky_counter;
-    for(uint32_t i = 0; i <velikostpole; i++)
+    uint16_t nenulove_delky_counter = 0;
+    uint16_t nenulove_suma= 0;
+    uint8_t velikosdtpole_poctydelek=0;
+    cout << endl;
+    for(uint16_t i = 0; i <velikostpole; i++)
     {   
-        buffer_zacatek_souboru[1+i] = poctydelek[i];
-        buffer_zacatek_souboru[1+i+velikostpole] = indexy_sort_delky[i];
+        cout << poctydelek[i] << ",";
+        if(nenulove_suma < velikostpole) velikosdtpole_poctydelek++;
+
+        if(poctydelek[i]!=0){
+            nenulove_delky_counter++;
+            nenulove_suma = nenulove_suma + poctydelek[i];
+        }
     }
+    cout << endl;
+
+    uint8_t pole_poctydelek[velikosdtpole_poctydelek] = {0};
+    for(uint16_t i = 0; i <velikosdtpole_poctydelek; i++)
+    {
+        pole_poctydelek[i] = poctydelek[i];
+        cout << +pole_poctydelek[i] << ",";
+    }
+    cout << endl;
+    cout << endl;
+    cout << "VELIKOST POLE " <<velikostpole<<endl;
+    cout << "neunlove "<<nenulove_delky_counter<<endl;
+    cout << "neunlove sumy "<<nenulove_suma<<endl;
+    cout << "rozdilne delky "<<+rozdilne_delky_counter<<endl;
+    cout << "velikosdtpole_poctydelek "<<+velikosdtpole_poctydelek<<endl;
+    ofstream fout(outputFile, ios::binary | ios::trunc);
+    if (!fout.is_open()) 
+    {
+        cout << "Failed to open file for writing!" << endl;
+        return 1;
+    }
+    fout.write(reinterpret_cast<const char*>(&velikosdtpole_poctydelek), sizeof(velikosdtpole_poctydelek)); 
+    fout.write((char*)&pole_poctydelek, sizeof(pole_poctydelek));
+    fout.write((char*)&indexy_sort_delky, sizeof(indexy_sort_delky));
+    fout.close();
+
+     for(uint32_t i = 0; i <sizeof(indexy_sort_delky); i++)
+     {
+        cout << +indexy_sort_delky[i] << ",";
+     }
+     cout << endl;
+
+    uint8_t bytewrite = 0;
+    uint8_t lenght =0;
+    uint8_t in = 0;
+
+    for(int i = 0; i< size; i++)
+    {
+        cout << +buffer[i];
+        in = returnIndex(indexy_sort_delky,buffer[i],sizeof(indexy_sort_delky));
+        cout << " " << huffmancode[in] <<endl;
+    }
+
 
     //DECODE
     cout << "\nDECODE\n";
-    uint16_t decode_N = buffer_zacatek_souboru[0];
-    
-    //CREATE FIRST SYMBOL AND FIRST CODE
-    uint16_t firstCode[decode_N+1] = {0};
-    uint16_t firstSymbol[decode_N+1] = {0};
 
-    int c = 0;
-    int s = 0;
-    for(int i = 0; i <decode_N+1; i++)
+    uint8_t decode_N = 0;
+
+    std::ifstream findecode("out", ios::binary);
+
+    findecode.read(reinterpret_cast<char*>(&decode_N), sizeof(decode_N));
+    uint8_t pole_poctydelek_decode[decode_N] = {0};
+    uint8_t pocetznaku_decode = 0;
+
+    findecode.read(reinterpret_cast<char*>(pole_poctydelek_decode), decode_N);
+
+    for(uint16_t i = 0; i <decode_N; i++)
     {
-        firstCode[i] = c;
-        firstSymbol[i] = s;
-        s = s + (buffer_zacatek_souboru[i+1]);
-        c = (c+(buffer_zacatek_souboru[i+1]-1)+1)<<1;
+        pocetznaku_decode = pocetznaku_decode + pole_poctydelek_decode[i];
     }
-    int testinpuit = 0b110110011110;
+
+    uint8_t znaky_decode[pocetznaku_decode] = {0};
+
+    findecode.read(reinterpret_cast<char*>(znaky_decode), pocetznaku_decode);
+
+    cout <<endl;
+    findecode.close(); 
+    
+    // //CREATE FIRST SYMBOL AND FIRST CODE
+    // uint16_t firstCode[decode_N+1] = {0};
+    // uint16_t firstSymbol[decode_N+1] = {0};
+
+    // int c = 0;
+    // int s = 0;
+    // for(int i = 0; i <decode_N+1; i++)
+    // {
+    //     firstCode[i] = c;
+    //     firstSymbol[i] = s;
+    //     s = s + (buffer_zacatek_souboru[i+1]);
+    //     c = (c+(buffer_zacatek_souboru[i+1]-1)+1)<<1;
+    // }
+    // int testinpuit = 0b110110011110;
 
     
-    //DECODE function
-    uint16_t cd = 0;
-    uint16_t l = 0;
-      for(int i = 0; i<12; i++)
-      {
-        l = l+1;
-        bool  bit = testinpuit & (1 << (12 - i - 1));
-        cd = (cd<<1) + bit;
+    // //DECODE function
+    // uint16_t cd = 0;
+    // uint16_t l = 0;
+    //   for(int i = 0; i<12; i++)
+    //   {
+    //     l = l+1;
+    //     bool  bit = testinpuit & (1 << (12 - i - 1));
+    //     cd = (cd<<1) + bit;
 
-        if((cd<<1)<firstCode[l+1-1])
-        {
-            //TOTO JSOU INDEXY na to co ukazuje při tom poslání
-            cout << firstSymbol[l-1] + cd -firstCode[l-1] << ",";
-            l =0;
-            cd= 0;
-        }
+    //     if((cd<<1)<firstCode[l+1-1])
+    //     {
+    //         //TOTO JSOU INDEXY na to co ukazuje při tom poslání
+    //         cout << firstSymbol[l-1] + cd -firstCode[l-1] << ",";
+    //         l =0;
+    //         cd= 0;
+    //     }
 
-      }
-
+    //   }
 
     return 0;
-
 }
