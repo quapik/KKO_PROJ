@@ -1,14 +1,14 @@
 //Projekt do KKO, 5.5.2023, VUT FIT, Vojtěch Šíma, xsimav01
 #include "decode.h"
-void Decode(string inputFile)
+void Decode(string inputFile, string outputFile)
 {
     //Zjištění velikosti celého souboru, což bude potřeba pro dopočítání velikostí
-    std::ifstream findecodesize("out", std::ios::ate | std::ios::binary );
+    std::ifstream findecodesize(inputFile, std::ios::ate | std::ios::binary );
     std::streampos fsize = findecodesize.tellg();
     findecodesize.close();
 
     uint8_t pocet_ruznych_kodovych_delek = 0;
-    std::ifstream findecode("out", ios::binary);
+    std::ifstream findecode(inputFile, ios::binary);
 
     //Načtení prvního bytu, který nám říká počet různých velikostí délek -> velikost pole s počty na jednotlivých pozicích
     findecode.read(reinterpret_cast<char*>(&pocet_ruznych_kodovych_delek), sizeof(pocet_ruznych_kodovych_delek));
@@ -61,7 +61,7 @@ void Decode(string inputFile)
     uint16_t l = 0;
     bool msb_decode;
     //Soubor pro zápis
-    ofstream finalout("out.raw", ios::binary | ios::trunc);
+    ofstream finalout(outputFile, ios::binary | ios::trunc);
         //Dekódování podle přednášky
         for(uint32_t i = 0; i < pocet_bytu - 1; i++)
         {

@@ -1,2 +1,2 @@
 #include "huff_codec.h"
-void Decode(string inputFile);
+void Decode(string inputFile, string outputFile);

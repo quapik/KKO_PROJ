@@ -70,9 +70,15 @@ int main(int argc, char **argv){
         cout << "Chybně zadaný argument -w" <<endl;
         return 0;
     }
-    cout <<"CODE\n";
-    Code(inputFile, "Asdasd", widthValue);
-    cout <<"DEODE\n";
-    Decode("Asdasdasd");
+    if(comp) 
+    {
+        cout << "CODE\n";
+        Code(inputFile, outputFile, widthValue);
+    }
+    if(decomp) 
+    {
+        cout << "DECODE\n";
+        Decode(inputFile, outputFile);
+    }
     return 0;
 }
