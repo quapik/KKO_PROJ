@@ -1,5 +1,7 @@
 //Projekt do KKO, 5.5.2023, VUT FIT, Vojtěch Šíma, xsimav01
-//./huff_codec -c -w 512 -i df1h.raw -o out.txt
+//huff_codec.cpp - hlavní soubor co parsuje arumentu a spouští aplikaci
+//./huff_codec -c -w 512 -i df1h.raw -o out
+//./huff_codec -d -i out -o out_decoded.raw
 
 #include "huff_codec.h"
 #include "decode.h"

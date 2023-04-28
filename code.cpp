@@ -1,3 +1,5 @@
+//Projekt do KKO, 5.5.2023, VUT FIT, Vojtěch Šíma, xsimav01
+//code.cpp - soubor pro kodovaní dat
 #include "code.h"
 
 //Funkce která vrací true pokud se hodnota vyskytuje v poli

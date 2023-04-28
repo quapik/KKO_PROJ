@@ -1,4 +1,5 @@
 //Projekt do KKO, 5.5.2023, VUT FIT, Vojtěch Šíma, xsimav01
+//decode.cpp - soubor pro dekodovaní dat
 #include "decode.h"
 void Decode(string inputFile, string outputFile)
 {
@@ -30,9 +31,10 @@ void Decode(string inputFile, string outputFile)
     findecode.read(reinterpret_cast<char*>(znaky_decode), pocetznaku);
 
     //Zjištění zbývajících bytů v souboru po odečtění hlavičky
-    uint32_t pocet_bytu =  static_cast<uint32_t>(fsize)-(1+pocet_ruznych_kodovych_delek+pocetznaku);
+    uint32_t pocet_bytu =  static_cast<uint32_t>(fsize)-(1+pocet_ruznych_kodovych_delek*2+pocetznaku);
     uint8_t decode_bytes[pocet_bytu]= {0};
 
+ 
     //Načtení zbytku souboru
     findecode.read(reinterpret_cast<char*>(decode_bytes), pocet_bytu);
     findecode.close(); 
@@ -56,6 +58,8 @@ void Decode(string inputFile, string outputFile)
 
     uint8_t byteread;
     
+
+    int size = 0;
     //Samotné dekódování
     c = 0;
     uint16_t l = 0;
@@ -83,6 +87,7 @@ void Decode(string inputFile, string outputFile)
                 {   
                     //Zapiš hodnotu znaku do souboru
                     finalout.write((char*)&znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]], 1);
+                    size++;
                     l = 0;
                     c = 0;
                 }
