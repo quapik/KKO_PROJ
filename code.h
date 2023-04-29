@@ -6,4 +6,4 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint16_t 
 void vypocetdelek(uint32_t heap[], uint32_t sizehalfheap);
 void bubble_sort (uint8_t delky_sorted[], uint8_t indexy_sort_delky[], uint16_t pocethodnot);
 uint8_t returnIndex(uint8_t arr[], uint8_t val, uint16_t len);
-void Code(string inputFile, string outputFile, uint16_t widthValue);
+void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, bool adapt);

@@ -75,12 +75,12 @@ int main(int argc, char **argv){
     if(comp) 
     {
         cout << "CODE\n";
-        Code(inputFile, outputFile, widthValue);
+        Code(inputFile, outputFile, widthValue, model, adapt);
     }
     if(decomp) 
     {
         cout << "DECODE\n";
-        Decode(inputFile, outputFile);
+        Decode(inputFile, outputFile, model, adapt);
     }
     return 0;
 }

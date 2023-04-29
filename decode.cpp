@@ -1,7 +1,7 @@
 //Projekt do KKO, 5.5.2023, VUT FIT, Vojtěch Šíma, xsimav01
 //decode.cpp - soubor pro dekodovaní dat
 #include "decode.h"
-void Decode(string inputFile, string outputFile)
+void Decode(string inputFile, string outputFile, bool model, bool adapt)
 {
     //Zjištění velikosti celého souboru, což bude potřeba pro dopočítání velikostí
     std::ifstream findecodesize(inputFile, std::ios::ate | std::ios::binary );
@@ -16,6 +16,7 @@ void Decode(string inputFile, string outputFile)
     
     uint16_t pole_poctydelek[pocet_ruznych_kodovych_delek];
     uint16_t pocetznaku = 0;
+
 
     //Načtení pole s délkamy slov - index pole říká délku, hodnota počet slov s touto délkou
     findecode.read(reinterpret_cast<char*>(pole_poctydelek), sizeof(pole_poctydelek));
@@ -32,6 +33,7 @@ void Decode(string inputFile, string outputFile)
 
     //Zjištění zbývajících bytů v souboru po odečtění hlavičky
     uint32_t pocet_bytu =  static_cast<uint32_t>(fsize)-(1+pocet_ruznych_kodovych_delek*2+pocetznaku);
+    //cout << pocet_bytu;
     uint8_t decode_bytes[pocet_bytu]= {0};
 
  
@@ -64,6 +66,7 @@ void Decode(string inputFile, string outputFile)
     c = 0;
     uint16_t l = 0;
     bool msb_decode;
+    bool first = true;
     //Soubor pro zápis
     ofstream finalout(outputFile, ios::binary | ios::trunc);
         //Dekódování podle přednášky
@@ -86,6 +89,22 @@ void Decode(string inputFile, string outputFile)
                 if((c << 1) < firstCode[l + 1 - 1])
                 {   
                     //Zapiš hodnotu znaku do souboru
+                    uint8_t prev = 0;
+                    if(model)
+                    {   
+                        uint8_t diff = 0;
+                        if(first)
+                        {
+                            finalout.write((char*)&znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]], 1);
+                            prev = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
+                            first = false;
+                        }
+                        else
+                        {
+                            diff = prev + znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
+                            prev = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
+                        }
+                    }
                     finalout.write((char*)&znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]], 1);
                     size++;
                     l = 0;

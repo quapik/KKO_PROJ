@@ -136,7 +136,7 @@ uint8_t returnIndex(uint8_t arr[], uint8_t val, uint16_t len)
     return 0;
 }
 
-void Code(string inputFile, string outputFile, uint16_t widthValue)
+void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, bool adapt)
 {
     uint32_t size = widthValue * widthValue ;
     uint8_t buffer[size];
@@ -150,19 +150,42 @@ void Code(string inputFile, string outputFile, uint16_t widthValue)
     }
     fin.close(); 
 
+    if(model)
+    {   
+        // uint8_t diff = 0;
+        // cetnosti[buffer[0]] = cetnosti[buffer[0]] + 1 ; 
+        // for(uint32_t i = 1; i < size; i++)
+        // {   
+        //     diff = buffer[i] - buffer[i-1];
+        //     //cout << +diff << endl;
+        //     cetnosti[+diff] = cetnosti[+diff] + 1; 
+        // }
+        //Kdyz pocitas diff rovnou a ukladas do cenosti, tak to kdovi proc nefunguje TODO
+        uint8_t *copy = new uint8_t[size];
+        copy [0] = buffer[0];
+        for(int i = 1; i < size; i++) copy[i] = buffer[i] - buffer[i-1];
+        for(int j = 0; j < size; j++) buffer[j] = copy [j];
+        delete[] copy;
+    }
+
     //Procházení četností a uložení toho, kolikrát se dané hodnoty 
     for(uint32_t i = 0; i < size; i++)
     {
-        cetnosti[+buffer[i]] = cetnosti[+buffer[i]] + 1 ; 
+        cetnosti[buffer[i]] = cetnosti[buffer[i]] + 1 ; 
     }
+       
+    
+   
     uint16_t nenulove_cetnosti = 0;
 
     //Zjištění kolik je nenulových četnosti (nulové se vynechají)
     for(uint32_t i = 0; i < 256; i++)
-    {
+    {   
+        cout << cetnosti[i] << ",";
         if (cetnosti[i] != 0) nenulove_cetnosti++;
     }
-
+    cout << endl;
+    cout <<"nenul " <<nenulove_cetnosti;
 
     //Upravení na pouze nenulové hodnoty, uložení indexů kdy index má v sobě odkaz na původní 0-255 hodnotu
     uint32_t cetnosti_beznul[nenulove_cetnosti] = {0};
@@ -206,7 +229,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue)
     heapwork(heap, velikostpole, 0, empty);
     vypocetdelek(heap, velikostpole);
 
-    uint8_t delky[velikostpole] = {0};
+    uint8_t delky[velikostpole*2] = {0};
     uint8_t delky_sorted[velikostpole] = {0};
     uint8_t indexy_sort_delky[velikostpole]  = {0};
 
