@@ -3,7 +3,7 @@
 #include "code.h"
 
 //Funkce která vrací true pokud se hodnota vyskytuje v poli
-bool isin(uint16_t elem, const uint16_t* arr, size_t size) 
+bool isin(uint16_t elem, const uint32_t* arr, size_t size) 
 {
     for (size_t i = 0; i < size; i++) 
     {
@@ -12,7 +12,7 @@ bool isin(uint16_t elem, const uint16_t* arr, size_t size)
     return false;
 }
 
-void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint16_t ignore[]) 
+void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t ignore[]) 
 {
     //Ukonči tvoření heapu ve správnou chvíli
     if (sizehalfheap-1-poradi < 1)
@@ -24,7 +24,7 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint16_t 
     uint16_t heapinddex = sizehalfheap-poradi-1;
 
     //Sestav pole, kde budou přidána minima co se mají v ignorovat kvůli správnému sestavení heapu
-    uint16_t ignore_minima[256] = {0};
+    uint32_t ignore_minima[256] = {0};
 
     //Index prvku, který je aktuálním minimem se bude ignorovat a místo minima se vloží index rodiče
     ignore[poradi*2] = heap[0];
@@ -161,12 +161,18 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         //     cetnosti[+diff] = cetnosti[+diff] + 1; 
         // }
         //Kdyz pocitas diff rovnou a ukladas do cenosti, tak to kdovi proc nefunguje TODO
-        uint8_t *copy = new uint8_t[size];
-        copy [0] = buffer[0];
-        for(int i = 1; i < size; i++) copy[i] = buffer[i] - buffer[i-1];
-        for(int j = 0; j < size; j++) buffer[j] = copy [j];
-        delete[] copy;
-    }
+      uint8_t *tmp = new uint8_t[size];
+        tmp[0] = buffer[0];//prvy nechame
+       for (int i = 1; i < size; i++){
+        tmp[i] = buffer[i] -buffer[i-1];
+        //cout <<   +buffer[i] <<"-" << +buffer[i-1] << "=" << +tmp[i]<<endl;
+        }
+
+        for(int j = 0; j < size; j++){
+            buffer[j] = tmp[j];
+        }
+        delete [] tmp;
+        }
 
     //Procházení četností a uložení toho, kolikrát se dané hodnoty 
     for(uint32_t i = 0; i < size; i++)
@@ -206,11 +212,13 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     uint32_t cet_sort[velikostpole] = {0};
     uint32_t heap[velikostpole*2] = {0};
 
+
     //Uložení četností do druhé poloviny heapu a kopírování pole pro řazení
     for (uint32_t i = 0; i < velikostpole; i++)
     {
             heap[velikostpole+i] =  cetnosti_beznul[i];
             cet_sort[i] =  cetnosti_beznul[i];
+            cout << "CETSORT" << cet_sort[i] << endl;
     }
     sort(cet_sort, cet_sort + velikostpole);
 
@@ -223,7 +231,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         heap[i] = index_value+velikostpole;
     }
 
-    uint16_t empty[512] = {0};
+    uint32_t empty[512] = {0};
 
     //Na heapě udělej všechny přesuny a vypočítej délky
     heapwork(heap, velikostpole, 0, empty);
@@ -242,6 +250,14 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
 
     //Seřazení obou polí
     bubble_sort(delky_sorted, indexy_sort_delky, velikostpole);
+     cout << "DELKY SORTED" << endl;
+     for(uint32_t i = 0; i <velikostpole; i++)
+     {
+        cout << +delky_sorted[i]<<",";
+     }
+      cout << endl;
+        cout << endl;
+
 
     uint32_t huffmancode[velikostpole] = {0};
     uint16_t delta = 0;
@@ -257,9 +273,8 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     }
 
     uint8_t rozdilne_delky_counter = 0;
-    uint16_t rozdilne_delky[velikostpole] = {0};
-    uint16_t poctydelek[velikostpole] = {0};
-    uint16_t buffer_zacatek_souboru[1 + velikostpole*2] {0};
+    uint32_t rozdilne_delky[velikostpole] = {0};
+    uint32_t poctydelek[velikostpole] = {0};
 
     //Zjištění počtu rozdílnách délek
     for(uint32_t i = 0; i <velikostpole; i++)
@@ -272,7 +287,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
             rozdilne_delky[i] = delky_sorted[i]; 
         }
     }
-
+    cout << "rozdilne_delky_counter " << +rozdilne_delky_counter <<endl;
     uint16_t nenulove_delky_counter = 0;
     uint16_t nenulove_suma= 0;
     uint8_t velikosdtpole_poctydelek=0;
@@ -283,17 +298,21 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         if(nenulove_suma < velikostpole) velikosdtpole_poctydelek++;
         if(poctydelek[i]!=0)
         {
+            cout << poctydelek[i]<< "poctydfelek" <<endl;
             nenulove_delky_counter++;
             nenulove_suma = nenulove_suma + poctydelek[i];
         }
     }
-
     //Uložení pouze prvních N prvků podle velikosti 
     uint16_t pole_poctydelek[velikosdtpole_poctydelek] = {0};
     for(uint16_t i = 0; i <velikosdtpole_poctydelek; i++)
     {
         pole_poctydelek[i] = poctydelek[i];
+        cout << +pole_poctydelek[i] <<"AAAA" <<endl;
     }
+
+    if (velikosdtpole_poctydelek==1) pole_poctydelek[0] = 1;
+     cout << sizeof(pole_poctydelek) <<"AAAA" <<endl;
 
     ofstream fout(outputFile, ios::binary | ios::trunc);
     fout.write(reinterpret_cast<const char*>(&velikosdtpole_poctydelek), sizeof(velikosdtpole_poctydelek)); 
@@ -302,6 +321,36 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
 
     uint8_t bytewrite = 0;
     uint8_t volnebity = 8;
+    int test = 0;
+
+    //Osetreni pro pripad, ze se tam vyskystuje pouze jeden znak (jindy to nefunguje, netusim proc)
+    if (velikosdtpole_poctydelek==1)
+    {
+        for(uint32_t  i = 0; i <size; i++) 
+        {   
+            volnebity--;
+            if (volnebity == 0)
+            {
+                fout.write(reinterpret_cast<const char*>(&bytewrite), 1); 
+                volnebity = 8;
+            }
+        }
+        fout.write(reinterpret_cast<const char*>(&bytewrite), 1);
+        volnebity = 8 - volnebity;
+        fout.write(reinterpret_cast<const char*>(&volnebity), 1);
+        return;
+    }
+
+
+    cout << " velikosdtpole_poctydelek " << +velikosdtpole_poctydelek << endl;
+    for(uint16_t i = 0; i <velikosdtpole_poctydelek; i++)
+    {
+        cout << +pole_poctydelek[i] <<",";
+    }
+    cout << endl;
+
+    
+
     uint8_t lenght =0;
     uint8_t in = 0;
     bool msb;
@@ -313,6 +362,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         in = returnIndex(indexy_sort_delky,buffer[i],sizeof(indexy_sort_delky));
         huff_value = huffmancode[in];
         lenght = delky_sorted[in];
+        //cout <<"in " <<+in <<" huffvalue " << +huff_value << " Len " << +lenght << endl;
         //Posuň podle délky užitečné bity doprava
         huff_value = huff_value << (32-lenght);
         for(uint16_t j = 0; j < lenght; j++)
@@ -335,7 +385,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     //V předpoledním bytu posuň bity co nejvíce doprava a do posledního bytu napiš kolik jich je užitečných
     bytewrite = bytewrite << volnebity;
     fout.write(reinterpret_cast<const char*>(&bytewrite), 1);
-    volnebity = 8 - volnebity; 
+    volnebity = 8 - volnebity;
     fout.write(reinterpret_cast<const char*>(&volnebity), 1);
     fout.close();
 }

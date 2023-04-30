@@ -59,17 +59,18 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
     }
 
     uint8_t byteread;
-    
-
-    int size = 0;
     //Samotné dekódování
     c = 0;
     uint16_t l = 0;
     bool msb_decode;
     bool first = true;
+    uint8_t prev = 0;
+    uint8_t diff = 0;
+    int counter = 0;
     //Soubor pro zápis
     ofstream finalout(outputFile, ios::binary | ios::trunc);
         //Dekódování podle přednášky
+        cout << "pocet bytu " << pocet_bytu << endl;
         for(uint32_t i = 0; i < pocet_bytu - 1; i++)
         {
             byteread = decode_bytes[i];
@@ -85,32 +86,38 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
                 byteread = byteread << 1;
 
                 c = (c << 1) + msb_decode;
-
                 if((c << 1) < firstCode[l + 1 - 1])
                 {   
                     //Zapiš hodnotu znaku do souboru
-                    uint8_t prev = 0;
                     if(model)
                     {   
-                        uint8_t diff = 0;
                         if(first)
-                        {
-                            finalout.write((char*)&znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]], 1);
+                        {   
                             prev = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
                             first = false;
+                             counter++; 
+                             cout << "FIRST " << +prev <<endl;
                         }
                         else
-                        {
-                            diff = prev + znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
-                            prev = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
+                        {   
+                            diff = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
+                            //cout << "diff " << +diff << endl;
+                            prev = prev + diff;
+                            counter++; 
                         }
+                    //cout << "prev " << +prev << endl;
+                    //28 30 29 31
+                    finalout.write((char*)(&prev), 1);
                     }
-                    finalout.write((char*)&znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]], 1);
-                    size++;
+                    else
+                    {
+                        finalout.write((char*)&(znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]]), 1);
+                    }
                     l = 0;
                     c = 0;
                 }
             }  
         }
+    cout << "counter" <<counter;
     finalout.close();
 }
