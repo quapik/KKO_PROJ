@@ -5,7 +5,9 @@
 
 #include "huff_codec.h"
 #include "decode.h"
+#include "decode_adapt.h"
 #include "code.h"
+#include "code_adapt.h"
 
 int main(int argc, char **argv){
     int argument;
@@ -75,12 +77,14 @@ int main(int argc, char **argv){
     if(comp) 
     {
         cout << "CODE\n";
-        Code(inputFile, outputFile, widthValue, model, adapt);
+        if(adapt)  Code_adapt(inputFile, outputFile, widthValue, model);
+        else Code(inputFile, outputFile, widthValue, model, adapt);
     }
     if(decomp) 
     {
         cout << "DECODE\n";
-        Decode(inputFile, outputFile, model, adapt);
+        if(adapt) Decode_adapt(inputFile, outputFile, model);
+        else Decode(inputFile, outputFile, model, adapt);
     }
     return 0;
 }

@@ -1,18 +1,8 @@
 //Projekt do KKO, 5.5.2023, VUT FIT, Vojtěch Šíma, xsimav01
-//code.cpp - soubor pro kodovaní dat
+//code.cpp - soubor pro adaptivní kodovaní dat
+#include "code_adapt.h"
 #include "code.h"
-
-//Funkce která vrací true pokud se hodnota vyskytuje v poli
-bool isin(uint16_t elem, const uint32_t* arr, size_t size) 
-{
-    for (size_t i = 0; i < size; i++) 
-    {
-        if (arr[i] == elem) return true;
-    }
-    return false;
-}
-
-void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t ignore[]) 
+void heapwork_adapt(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t ignore[]) 
 {
     //Ukonči tvoření heapu ve správnou chvíli
     if (sizehalfheap-1-poradi < 1)
@@ -86,102 +76,28 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t 
         ignore_minima[i] = heapinddex;
     }
     //Rekurzivní volání a sestavení finální heap    
-    heapwork(heap,sizehalfheap, poradi+1, ignore);
+    heapwork_adapt(heap,sizehalfheap, poradi+1, ignore);
 }
 
-//Funkce co vypočítá jednotlivé délky na heapu
-void vypocetdelek(uint32_t heap[], uint32_t sizehalfheap)
-{
-    uint32_t root = heap[1];
 
-    for(int i = (sizehalfheap*2)-1; i > sizehalfheap-1; i--)
-    {
-        uint16_t delka = 1;
-        uint16_t index = heap[i];
-        while(index != 1)
-        {   
-            index = heap[index];
-            delka++;
-        }
-    heap[i] = delka;
-    }
-}
-//Bubble sort pro řazení dvou polí současně - potřeba zachovat k délkám i indexy
-void bubble_sort (uint8_t delky_sorted[], uint8_t indexy_sort_delky[], uint16_t pocethodnot) 
+void Code_block(uint8_t* block, string outputFile, uint16_t widthValue,  bool first)
 {
-    int temp;
-    for ( int i = 0; i < pocethodnot; i++ ) 
-    {
-        for ( int j = 0; j + 1 < pocethodnot - i; j++ ) 
-        {
-            if ( delky_sorted[ j ] > delky_sorted [ j + 1 ])  
-            {
-                temp = delky_sorted [ j ] ;
-                delky_sorted [ j ] = delky_sorted [ j + 1 ] ;
-                delky_sorted [ j + 1 ] = temp;
-                temp = indexy_sort_delky [ j ] ;
-                indexy_sort_delky [ j ] = indexy_sort_delky [ j + 1 ] ;
-                indexy_sort_delky [ j + 1 ] = temp;
-            }
-        }
-    }
-}
-//Funkce co vrátí index v poli
-uint8_t returnIndex(uint8_t arr[], uint8_t val, uint16_t len)
-{
-    for(uint16_t i = 0; i <len; i++)
-    {
-        if(arr[i] == val)  return i;
-    }
-    return 0;
-}
-
-void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, bool adapt)
-{
-    uint32_t size = widthValue * widthValue ;
-    uint8_t buffer[size];
     uint32_t cetnosti[256] = {0};
-    
-    //Otevři soubor a do bufferu nahraj všechny hodnoty 0-255
-    std::ifstream fin(inputFile, ios::binary);
-    if (fin.is_open()) 
-    {
-        fin.read(reinterpret_cast<char*>(buffer), size);
-    } 
-    else 
-    {
-        cout << "Nepodarilo se otevrit soubor " << inputFile <<endl;
-        return;
-    }
-    fin.close(); 
-
-    if(model)
-    {   
-        //Kdyz pocitas diff rovnou a ukladas do cenosti, tak to kdovi proc nefunguje TODO
-        uint8_t *save = new uint8_t[size];
-        save[0] = buffer[0];
-
-        for (int i = 1; i < size; i++) save[i] = buffer[i] - buffer[i-1];
-        for(int j = 0; j < size; j++) buffer[j] = save[j];
-        delete [] save;
-    }
 
     //Procházení četností a uložení toho, kolikrát se dané hodnoty 
-    for(uint32_t i = 0; i < size; i++)
+    for(uint8_t i = 0; i < 64; i++)
     {   
-        cetnosti[buffer[i]] = cetnosti[buffer[i]] + 1 ; 
+        cetnosti[+block[i]] = cetnosti[+block[i]] + 1 ; 
     }
-       
     uint16_t nenulove_cetnosti = 0;
 
     //Zjištění kolik je nenulových četnosti (nulové se vynechají)
-    for(uint32_t i = 0; i < 256; i++)
+    for(uint16_t i = 0; i < GRAYSCALE_SIZE; i++)
     {   
         if (cetnosti[i] != 0) nenulove_cetnosti++;
     }
 
-
-    //Upravení na pouze nenulové hodnoty, uložení indexů kdy index má v sobě odkaz na původní 0-255 hodnotu
+  //Upravení na pouze nenulové hodnoty, uložení indexů kdy index má v sobě odkaz na původní 0-255 hodnotu
     uint32_t cetnosti_beznul[nenulove_cetnosti] = {0};
     uint32_t indexy_beznul[nenulove_cetnosti] = {0};
     uint8_t offset_index = 0;
@@ -221,7 +137,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     uint32_t empty[512] = {0};
 
     //Na heapě udělej všechny přesuny a vypočítej délky
-    heapwork(heap, velikostpole, 0, empty);
+    heapwork_adapt(heap, velikostpole, 0, empty);
     vypocetdelek(heap, velikostpole);
 
     uint8_t delky[velikostpole*2] = {0};
@@ -237,15 +153,6 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
 
     //Seřazení obou polí
     bubble_sort(delky_sorted, indexy_sort_delky, velikostpole);
-    //  cout << "DELKY SORTED" << endl;
-    //  for(uint32_t i = 0; i <velikostpole; i++)
-    //  {
-    //     cout << +delky_sorted[i]<<",";
-    //  }
-    //   cout << endl;
-    //     cout << endl;
-
-
     uint32_t huffmancode[velikostpole] = {0};
     uint16_t delta = 0;
     uint32_t huff_value = 0;
@@ -289,8 +196,11 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
             nenulove_suma = nenulove_suma + poctydelek[i];
         }
     }
+    //cout << "velikosdtpole_poctydelek " << +velikosdtpole_poctydelek <<endl;
+    
     //Uložení pouze prvních N prvků podle velikosti 
-    uint16_t pole_poctydelek[velikosdtpole_poctydelek] = {0};
+
+    uint16_t pole_poctydelek[velikosdtpole_poctydelek];
     for(uint16_t i = 0; i <velikosdtpole_poctydelek; i++)
     {
         pole_poctydelek[i] = poctydelek[i];
@@ -298,32 +208,37 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
 
     if (velikosdtpole_poctydelek==1) pole_poctydelek[0] = 1;
 
-    ofstream fout(outputFile, ios::binary | ios::trunc);
+    uint8_t lenght = 0;
+    uint8_t lenght_sum = 0;
+    uint8_t in = 0;
+    bool msb;
+    int test = 0;
+    //Výpočet toho, jak bude výsledký zápis dlouhý v bytech
+    for(uint32_t  i = 0; i< BLOCK_SIZE*BLOCK_SIZE; i++) 
+    {      
+        in = returnIndex(indexy_sort_delky,block[i],sizeof(indexy_sort_delky));
+        lenght = delky_sorted[in];
+        lenght_sum += lenght;
+    }
+    lenght_sum = lenght_sum/8 + 2;
+    cout << "lenght_sum "<< +lenght_sum << " velikosdtpole_poctydelek " << +velikosdtpole_poctydelek<< endl;
+    
+    //Zaručení vyprázdnění souboru v prvním případě
+    if(first)
+    {
+        ofstream fout(outputFile, ios::binary | ios::trunc);
+        fout.close();
+    }
+
+    ofstream fout(outputFile, ios::binary | ios::app);
+    
+    fout.write(reinterpret_cast<const char*>(&lenght_sum), sizeof(lenght_sum)); 
     fout.write(reinterpret_cast<const char*>(&velikosdtpole_poctydelek), sizeof(velikosdtpole_poctydelek)); 
     fout.write((char*)&pole_poctydelek, sizeof(pole_poctydelek));
     fout.write((char*)&indexy_sort_delky, sizeof(indexy_sort_delky));
-
+    
     uint8_t bytewrite = 0;
     uint8_t volnebity = 8;
-
-    //Osetreni pro pripad, ze se tam vyskystuje pouze jeden znak (jindy to nefunguje, netusim proc)
-    if (velikosdtpole_poctydelek==1)
-    {
-        for(uint32_t  i = 0; i <size; i++) 
-        {   
-            volnebity--;
-            if (volnebity == 0)
-            {
-                fout.write(reinterpret_cast<const char*>(&bytewrite), 1); 
-                volnebity = 8;
-            }
-        }
-        fout.write(reinterpret_cast<const char*>(&bytewrite), 1);
-        volnebity = 8 - volnebity;
-        fout.write(reinterpret_cast<const char*>(&volnebity), 1);
-        return;
-    }
-
 
     // cout << " velikosdtpole_poctydelek " << +velikosdtpole_poctydelek << endl;
     // for(uint16_t i = 0; i <velikosdtpole_poctydelek; i++)
@@ -336,18 +251,33 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     // {
     //     cout << + indexy_sort_delky[i] <<",";
     // }
-    // cout << endl;
+    // // cout << endl;
 
-    uint8_t lenght =0;
-    uint8_t in = 0;
-    bool msb;
-    int test = 0;
+
+    // //Osetreni pro pripad, ze se tam vyskystuje pouze jeden znak (jindy to nefunguje, netusim proc)
+    // if (velikosdtpole_poctydelek==1)
+    // {
+    //     for(uint32_t  i = 0; i < BLOCK_SIZE*BLOCK_SIZE; i++) 
+    //     {   
+    //         volnebity--;
+    //         if (volnebity == 0)
+    //         {
+    //             fout.write(reinterpret_cast<const char*>(&bytewrite), 1); 
+    //             volnebity = 8;
+    //         }
+    //     }
+    //     fout.write(reinterpret_cast<const char*>(&bytewrite), 1);
+    //     volnebity = 8 - volnebity;
+    //     fout.write(reinterpret_cast<const char*>(&volnebity), 1);
+    //     return;
+    // }
+
+
     //Procházej všechny načtené znaky
-    for(uint32_t  i = 0; i< size; i++) 
+    for(uint32_t  i = 0; i< BLOCK_SIZE*BLOCK_SIZE; i++) 
     {      
         //Najdi index, najdi kod a jeho delku
-        test++;
-        in = returnIndex(indexy_sort_delky,buffer[i],sizeof(indexy_sort_delky));
+        in = returnIndex(indexy_sort_delky,block[i],sizeof(indexy_sort_delky));
         huff_value = huffmancode[in];
         lenght = delky_sorted[in];
         //cout <<"in " <<+in <<" huffvalue " << +huff_value << " Len " << +lenght << endl;
@@ -376,5 +306,63 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     volnebity = 8 - volnebity;
     fout.write(reinterpret_cast<const char*>(&volnebity), 1);
     fout.close();
-    cout << "test " << test << endl;
+
+}
+
+void Code_adapt(string inputFile, string outputFile, uint16_t widthValue, bool model)
+{
+    uint32_t size = widthValue * widthValue ;
+    uint8_t *buffer = new uint8_t[size];
+    uint8_t *block = new uint8_t[8*8];
+    bool first = true;
+    
+    //Otevři soubor a do bufferu nahraj všechny hodnoty 0-255
+    std::ifstream fin(inputFile, ios::binary);
+    if (fin.is_open()) 
+    {
+        fin.read(reinterpret_cast<char*>(buffer), size);
+    } 
+    else 
+    {
+        cout << "Nepodarilo se otevrit soubor " << inputFile <<endl;
+        return;
+    }
+    fin.close(); 
+
+    uint32_t pocetbloku = (widthValue / 8)+1;
+    uint8_t posledniblok_delka = widthValue - (widthValue / 8) * 8 ;
+    cout <<"pocetbloku "  <<  pocetbloku << " posledniblok_delka " << +posledniblok_delka <<endl;
+    if (posledniblok_delka==0) pocetbloku = pocetbloku - 1;
+    for(uint32_t j = 0; j < pocetbloku; j++)
+    {
+        for(uint32_t i = 0; i < pocetbloku; i++)
+        {
+            for(uint32_t k = 0; k < 8; k++)
+            {
+                 for(uint32_t l = 0; l < 8; l++)
+                 {
+                    block[k*8+l] = buffer[j*widthValue*(8+k)+(i*8)+l];
+                    //cout << "block index " <<  k*8+l <<" all index " << i*widthValue*8 + k*widthValue + j*8 + l<< endl;
+                 }
+
+            }
+            for(uint32_t kw = 0; kw < BLOCK_SIZE; kw++)
+            {
+                for(uint32_t lw = 0; lw < BLOCK_SIZE; lw++)
+                {
+                    cout  << +block[kw*BLOCK_SIZE+lw] << " ";
+                }
+                cout << endl;
+
+            }
+            cout << endl;
+            cout << endl;
+            Code_block(block,outputFile,widthValue, first);
+            first = false;
+        }
+    }
+
+    delete[] buffer;
+    delete[] block;
+    return;
 }

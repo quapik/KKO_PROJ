@@ -11,3 +11,4 @@
 #include <limits.h>
 #include <bitset>
 using namespace std;
+#define GRAYSCALE_SIZE 256
