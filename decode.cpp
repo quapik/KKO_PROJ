@@ -118,7 +118,7 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
                             prev = prev + diff;
                             //cout << +prev << " " <<endl;
                             counter++; 
-                            cout << counter << " ";
+                            //cout << counter << " ";
                         }
                     //28 30 29 31
 
