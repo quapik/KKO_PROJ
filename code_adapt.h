@@ -6,3 +6,4 @@
 void Code_adapt(string inputFile, string outputFile, uint16_t widthValue, bool model);
 void Code_block(uint8_t* block, string outputFile, uint16_t widthValue, bool first);
 void heapwork_adapt(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t ignore[]);
+void vypocetdelek_adapt(uint32_t heap[], uint32_t sizehalfheap);

@@ -1,6 +1,8 @@
 //Projekt do KKO, 5.5.2023, VUT FIT, Vojtěch Šíma, xsimav01
 //code.cpp - soubor pro kodovaní dat
 #include "code.h"
+#include <chrono>
+
 
 //Funkce která vrací true pokud se hodnota vyskytuje v poli
 bool isin(uint16_t elem, const uint32_t* arr, size_t size) 
@@ -13,7 +15,11 @@ bool isin(uint16_t elem, const uint32_t* arr, size_t size)
 }
 
 void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t ignore[]) 
-{
+{   
+    // Začátek měření času
+    auto start = std::chrono::high_resolution_clock::now();
+
+    cout << "poradi " << poradi<<endl;
     //Ukonči tvoření heapu ve správnou chvíli
     if (sizehalfheap-1-poradi < 1)
     {
@@ -21,7 +27,7 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t 
     }
     //Ulož si ze seřazené heapy nejmenší prvek a index, kam se bude později ukládat výsledek
     uint32_t extracted_min = heap[heap[0]];
-    uint16_t heapinddex = sizehalfheap-poradi-1;
+    uint32_t heapinddex = sizehalfheap-poradi-1;
 
     //Sestav pole, kde budou přidána minima co se mají v ignorovat kvůli správnému sestavení heapu
     uint32_t ignore_minima[256] = {0};
@@ -54,6 +60,13 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t 
         heap[i] = heapinddex;
         ignore_minima[i] = heapinddex;
     }
+      // Konec měření času
+    auto end = std::chrono::high_resolution_clock::now();
+
+    // Výpočet trvání úseku kódu v milisekundách
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Úsek kódu trval " << duration.count() << " milisekund." << std::endl;
+    
     //Hledání dalšího nejnižšího prvku (musela být předělána heapa, proto podobný kod podruhý)
     heapinddex = sizehalfheap-poradi-1;
     ignore[poradi*2+1] = heap[0];
@@ -91,20 +104,22 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t 
 
 //Funkce co vypočítá jednotlivé délky na heapu
 void vypocetdelek(uint32_t heap[], uint32_t sizehalfheap)
-{
-    uint32_t root = heap[1];
-
-    for(int i = (sizehalfheap*2)-1; i > sizehalfheap-1; i--)
+{    
+    if(sizehalfheap==1) heap[1] = 1; 
+    else
     {
-        uint16_t delka = 1;
-        uint16_t index = heap[i];
-        while(index != 1)
-        {   
-            index = heap[index];
-            delka++;
+        for(uint32_t i = (sizehalfheap*2)-1; i > sizehalfheap-1; i--)
+        {
+            uint32_t delka = 1;
+            uint32_t index = heap[i];
+            while(index != 1)
+            {   
+                index = heap[index];
+                delka++;
+            }
+            heap[i] = delka;
         }
-    heap[i] = delka;
-    }
+    } 
 }
 //Bubble sort pro řazení dvou polí současně - potřeba zachovat k délkám i indexy
 void bubble_sort (uint8_t delky_sorted[], uint8_t indexy_sort_delky[], uint16_t pocethodnot) 
@@ -141,7 +156,6 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     uint32_t size = widthValue * widthValue ;
     uint8_t buffer[size];
     uint32_t cetnosti[256] = {0};
-    
     //Otevři soubor a do bufferu nahraj všechny hodnoty 0-255
     std::ifstream fin(inputFile, ios::binary);
     if (fin.is_open()) 
@@ -196,10 +210,9 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         }
     }
 
-    uint16_t velikostpole = nenulove_cetnosti;
+    uint32_t velikostpole = nenulove_cetnosti;
     uint32_t cet_sort[velikostpole] = {0};
     uint32_t heap[velikostpole*2] = {0};
-
 
     //Uložení četností do druhé poloviny heapu a kopírování pole pro řazení
     for (uint32_t i = 0; i < velikostpole; i++)
@@ -207,10 +220,11 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
             heap[velikostpole+i] =  cetnosti_beznul[i];
             cet_sort[i] =  cetnosti_beznul[i];
     }
+
     sort(cet_sort, cet_sort + velikostpole);
 
     //Najdi vždy ity nejmenší prvek, zjisti jeho index a ten ulož na itou pozici v heapu
-    for(int i = 0; i < velikostpole; i++)
+    for(uint32_t i = 0; i < velikostpole; i++)
     {
         uint32_t smallest = cet_sort[i];
         auto index_p = find(cetnosti_beznul, cetnosti_beznul + velikostpole, smallest);
@@ -218,16 +232,20 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         heap[i] = index_value+velikostpole;
     }
 
-    uint32_t empty[512] = {0};
+   
+    
 
+    uint32_t empty[512] = {0};
     //Na heapě udělej všechny přesuny a vypočítej délky
     heapwork(heap, velikostpole, 0, empty);
+
+
     vypocetdelek(heap, velikostpole);
+
 
     uint8_t delky[velikostpole*2] = {0};
     uint8_t delky_sorted[velikostpole] = {0};
     uint8_t indexy_sort_delky[velikostpole]  = {0};
-
     for(uint32_t i = 0; i <velikostpole; i++)
     {
         delky[i] = heap[velikostpole+i];
@@ -237,15 +255,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
 
     //Seřazení obou polí
     bubble_sort(delky_sorted, indexy_sort_delky, velikostpole);
-    //  cout << "DELKY SORTED" << endl;
-    //  for(uint32_t i = 0; i <velikostpole; i++)
-    //  {
-    //     cout << +delky_sorted[i]<<",";
-    //  }
-    //   cout << endl;
-    //     cout << endl;
-
-
+    
     uint32_t huffmancode[velikostpole] = {0};
     uint16_t delta = 0;
     uint32_t huff_value = 0;

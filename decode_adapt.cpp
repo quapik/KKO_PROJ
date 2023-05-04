@@ -4,8 +4,10 @@
 #include "huff_codec.h"
 void Decode_adapt(string inputFile, string outputFile, bool model)
 {   
+    uint8_t pocetbloku = 64;
+    uint32_t widthValue = 512;
     //uint8_t buffer[256] = {0};
-    uint8_t *buffer = new uint8_t[256];
+    uint8_t *buffer = new uint8_t[widthValue*widthValue];
     uint8_t *block= new uint8_t[64];
    // uint8_t block[8*8] = {0};
 
@@ -13,15 +15,17 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
     uint8_t pocet_bytu = 0;
     uint8_t pocet_ruznych_kodovych_delek = 0;
     ifstream findecode(inputFile, ios::binary);
-    uint8_t pocetbloku = 2;
-    uint16_t widthValue = 16;
+
+    int test_counter = 0;
+   
     for(uint32_t j = 0; j < pocetbloku; j++)
     {
         for(uint32_t i = 0; i < pocetbloku; i++)
-        { 
+        {   
+            //cout << "test counter " << test_counter <<",";
+            test_counter++;
             //Načtení počtu bytů
             findecode.read(reinterpret_cast<char*>(&pocet_bytu), 1);
-            cout <<"pocet_bytu " <<pocet_bytu << endl;
             //Načtení prvního bytu, který nám říká počet různých velikostí délek -> velikost pole s počty na jednotlivých pozicích
             findecode.read(reinterpret_cast<char*>(&pocet_ruznych_kodovych_delek), sizeof(pocet_ruznych_kodovych_delek));
             
@@ -52,7 +56,7 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
 
             //Kolik užitečných bitů bude použito v posledním bytu
             uint8_t pocet_uzitecnych_posledni_byte = decode_bytes[pocet_bytu-1];
-
+            cout << "POCET BYTU " <<+pocet_bytu << " POSLEDNI " <<+pocet_uzitecnych_posledni_byte <<endl;
             //Vytvoření firstCode a firstSymbol dle přednášky
             //uint16_t firstCode[pocet_ruznych_kodovych_delek+1] = {0};
             uint16_t *firstCode = new uint16_t[pocet_ruznych_kodovych_delek+1];
@@ -90,7 +94,7 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
             // ofstream finalout(outputFile, ios::binary | ios::app);
 
             //Dekódování podle přednášky
-            cout << "POCET BYTU " << +pocet_bytu  << endl;
+            //cout << "POCET BYTU " << +pocet_bytu  << endl;
             for(uint32_t id = 0; id < pocet_bytu - 1; id++)
             {   
                 byteread = decode_bytes[id];
@@ -118,7 +122,7 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
                         block[counter] = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
                         //cout <<  +znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]] << "  ";
                         //cout << counter<<endl;
-                        cout << "counter zapis" << +counter  << "znak " << +znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]] <<endl;
+                        //cout << "counter zapis" << +counter  << "znak " << +znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]] <<endl;
                         counter++;
                      
                         }
@@ -137,10 +141,12 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
             for(uint32_t k = 0; k < 8; k++)
             {
                  for(uint32_t l2 = 0; l2 < 8; l2++)
-                 {
+                 {  
+                    //buffer[j*widthValue*8+(i*8)+l];
+                    //uint32_t buffindex = j*widthValue*8 + (k*widthValue)+(i*8)+l2;
                     uint32_t buffindex = j*widthValue*8 + (k*widthValue)+(i*8)+l2;
                     buffer[buffindex] = +block[k*8+l2];
-                    cout << "index " << buffindex  << " hodnota " << +block[k*8+l2] << " buff " << +buffer[buffindex] << " poradi " << k*8+l2 << endl;
+                    //cout << "index " << buffindex  << " hodnota " << +block[k*8+l2] << " buff " << +buffer[buffindex] << " poradi " << k*8+l2 << endl;
                  }
 
             }
@@ -156,7 +162,7 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
         }
     }
     ofstream finalout(outputFile, ios::binary | ios::trunc);
-    finalout.write(reinterpret_cast<const char*>(buffer), 256);
+    finalout.write(reinterpret_cast<const char*>(buffer), widthValue*widthValue);
     finalout.close();
   
     // for(uint32_t a = 0; a < 256; a++)

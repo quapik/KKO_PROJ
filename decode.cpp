@@ -50,13 +50,13 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
     uint8_t pocet_uzitecnych_posledni_byte = decode_bytes[pocet_bytu-1];
 
     //Vytvoření firstCode a firstSymbol dle přednášky
-    //uint16_t firstCode[pocet_ruznych_kodovych_delek+1] = {0};
-    uint16_t *firstCode = new uint16_t[pocet_ruznych_kodovych_delek+1];
-    //uin16_t firstSymbol[pocet_ruznych_kodovych_delek+1] = {0};
-    uint16_t *firstSymbol = new uint16_t[pocet_ruznych_kodovych_delek+1];
+    //uint32_t firstCode[pocet_ruznych_kodovych_delek+1] = {0};
+    uint32_t *firstCode = new uint32_t[pocet_ruznych_kodovych_delek+1];
+    //uint32_t firstSymbol[pocet_ruznych_kodovych_delek+1] = {0};
+    uint32_t *firstSymbol = new uint32_t[pocet_ruznych_kodovych_delek+1];
 
-    uint16_t c = 0;
-    uint16_t s = 0;
+    uint32_t c = 0;
+    uint32_t s = 0;
     for(uint16_t i = 0; i <pocet_ruznych_kodovych_delek+1; i++)
     {
         firstCode[i] = c;
@@ -97,7 +97,6 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
                 byteread = byteread << 1;
 
                 c = (c << 1) + msb_decode;
-               
                 if((c << 1) < firstCode[l + 1 - 1])
                 {   
                     //Zapiš hodnotu znaku do souboru
