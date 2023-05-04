@@ -26,9 +26,9 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
     for(uint16_t i = 0; i <pocet_ruznych_kodovych_delek; i++)
     {
         pocetznaku = pocetznaku + pole_poctydelek[i];
-        cout << +pole_poctydelek[i] << ",";
+        //cout << +pole_poctydelek[i] << ",";
     }
-    cout << endl;
+    //cout << endl;
     //Načtení znaků které se vyskytují v souboru a budeou dávány na výstup
     //uint8_t znaky_decode[pocetznaku];
     uint8_t *znaky_decode = new uint8_t[pocetznaku];
@@ -107,7 +107,6 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
                             prev = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
                             first = false;
                             counter++; 
-                            cout << "FIRST " << +prev <<endl;
                         }
                         else
                         {   
@@ -122,6 +121,7 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
                     //28 30 29 31
 
                     //finalout.write((char*)&prev, 1);
+                    //write nějak nešel
                     finalout.put(prev);
                     }
                     else
@@ -132,9 +132,8 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
                     l = 0;
                     c = 0;
                 }
-            }  
+            }
         }
-    cout << "counter" <<counter;
     delete[] znaky_decode;
     delete[] decode_bytes;
     delete[]  firstCode;   

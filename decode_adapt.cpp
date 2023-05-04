@@ -21,7 +21,7 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
     for(uint32_t j = 0; j < pocetbloku; j++)
     {
         for(uint32_t i = 0; i < pocetbloku; i++)
-        {   
+        {   bool first_block = true;
             //cout << "test counter " << test_counter <<",";
             test_counter++;
             //Načtení počtu bytů
@@ -30,7 +30,8 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
             findecode.read(reinterpret_cast<char*>(&pocet_ruznych_kodovych_delek), sizeof(pocet_ruznych_kodovych_delek));
             
             //uint16_t pole_poctydelek[pocet_ruznych_kodovych_delek];
-            uint16_t *pole_poctydelek = new uint16_t[pocet_ruznych_kodovych_delek];
+            //uint16_t *pole_poctydelek = new uint16_t[pocet_ruznych_kodovych_delek];
+            uint16_t pole_poctydelek[pocet_ruznych_kodovych_delek]; 
             uint16_t pocetznaku = 0;
 
             //Načtení pole s délkamy slov - index pole říká délku, hodnota počet slov s touto délkou
@@ -44,28 +45,49 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
             }
             //cout << endl;
             //Načtení znaků které se vyskytují v souboru a budeou dávány na výstup
-            uint8_t *znaky_decode = new uint8_t[pocetznaku];
-            
+            //uint8_t *znaky_decode = new uint8_t[pocetznaku];
+            uint8_t znaky_decode[pocetznaku];
+            //cout << "POCET ZNAKU " << pocetznaku << endl; 
             findecode.read(reinterpret_cast<char*>(znaky_decode), pocetznaku);
             //Zjištění zbývajících bytů v souboru po odečtění hlavičky
-            uint8_t *decode_bytes = new uint8_t[pocet_bytu];
+            //uint8_t *decode_bytes = new uint8_t[pocet_bytu];
+            uint8_t decode_bytes[pocet_bytu];
 
         
             //Načtení zbytku souboru
             findecode.read(reinterpret_cast<char*>(decode_bytes), pocet_bytu);
+            
+            // cout << "DELKY ";
+            //  for(uint32_t id = 0; id < pocet_ruznych_kodovych_delek; id++)
+            // {
+            //     cout << pole_poctydelek[id] << ",";
+            // }
+            // cout << endl;
+
+            // cout << "BYTY final ";
+            // for(uint32_t id = 0; id < pocet_bytu; id++)
+            // {
+            //     cout << +decode_bytes[id] << ",";
+            // }
+            // cout << endl;
+            //  cout << "TEST COUONTER  " << test_counter<<endl;
 
             //Kolik užitečných bitů bude použito v posledním bytu
             uint8_t pocet_uzitecnych_posledni_byte = decode_bytes[pocet_bytu-1];
-            cout << "POCET BYTU " <<+pocet_bytu << " POSLEDNI " <<+pocet_uzitecnych_posledni_byte <<endl;
-            //Vytvoření firstCode a firstSymbol dle přednášky
-            //uint16_t firstCode[pocet_ruznych_kodovych_delek+1] = {0};
-            uint16_t *firstCode = new uint16_t[pocet_ruznych_kodovych_delek+1];
-            //uin16_t firstSymbol[pocet_ruznych_kodovych_delek+1] = {0};
-            uint16_t *firstSymbol = new uint16_t[pocet_ruznych_kodovych_delek+1];
+            // cout << "POCET BYTU " <<+pocet_bytu << " POSLEDNI " <<+pocet_uzitecnych_posledni_byte <<endl;
+            // cout << "POCET ruznych kodovych delek " <<+pocet_ruznych_kodovych_delek<<endl;
 
-            uint16_t c = 0;
-            uint16_t s = 0;
-            for(uint16_t id = 0; id <pocet_ruznych_kodovych_delek+1; id++)
+           
+           
+            //Vytvoření firstCode a firstSymbol dle přednášky
+            uint32_t firstCode[pocet_ruznych_kodovych_delek+1] = {0};
+            //uint32_t *firstCode = new uint32_t[pocet_ruznych_kodovych_delek+1];
+            uint32_t firstSymbol[pocet_ruznych_kodovych_delek+1] = {0};
+           // uint32_t *firstSymbol = new uint32_t[pocet_ruznych_kodovych_delek+1];
+
+            uint32_t c = 0;
+            uint32_t s = 0;
+            for(uint32_t id = 0; id <pocet_ruznych_kodovych_delek+1; id++)
             {
                 firstCode[id] = c;
                 firstSymbol[id] = s;
@@ -73,28 +95,19 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
                 c = (c+(pole_poctydelek[id]-1)+1)<<1;
             }
 
-            delete[] pole_poctydelek;
+            //delete[] pole_poctydelek;
 
             uint8_t byteread;
             //Samotné dekódování
             c = 0;
-            uint16_t l = 0;
+            uint32_t l = 0;
             bool msb_decode;
             uint8_t prev = 0;
             uint8_t diff = 0;
             uint8_t counter = 0;
             uint8_t projdibyt = 8;
-            //Soubor pro zápis
-            
-            // if(first)
-            // {
-            //     ofstream finalout(outputFile, ios::binary | ios::trunc);
-            //     finalout.close();
-            // }
-            // ofstream finalout(outputFile, ios::binary | ios::app);
 
             //Dekódování podle přednášky
-            //cout << "POCET BYTU " << +pocet_bytu  << endl;
             for(uint32_t id = 0; id < pocet_bytu - 1; id++)
             {   
                 byteread = decode_bytes[id];
@@ -113,30 +126,38 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
                     
                     if((c << 1) < firstCode[l + 1 - 1])
                     {   
-                        //Zapiš hodnotu znaku do souboru
-                        
-                        //finalout.write((char*)&(znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]]), 1);
-                        //first = false;
                         if (counter < 64)
                         {
-                        block[counter] = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
-                        //cout <<  +znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]] << "  ";
-                        //cout << counter<<endl;
-                        //cout << "counter zapis" << +counter  << "znak " << +znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]] <<endl;
-                        counter++;
-                     
+                            //Zapiš hodnotu znaku do bufferu
+                            if(model)
+                            {   
+                                if(first_block)
+                                {   
+                                    prev = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
+                                    first_block = false;
+                                }
+                                else
+                                {   
+                                    diff = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
+                                    prev = prev + diff;
+                                }
+                            block[counter] = prev;
+                            }
+                            else
+                            {   
+                                block[counter] = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
+                            }
+                            counter++;
                         }
-                        
                         l = 0;
                         c = 0;
                     }
                 }  
             }
-            //finalout.close();
-            delete[] znaky_decode;
-            delete[] decode_bytes;
-            delete[] firstCode;   
-            delete[] firstSymbol;  
+            // delete[] znaky_decode;
+            // delete[] decode_bytes;
+            // delete[] firstCode;   
+            // delete[] firstSymbol;  
 
             for(uint32_t k = 0; k < 8; k++)
             {

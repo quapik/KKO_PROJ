@@ -16,10 +16,6 @@ bool isin(uint16_t elem, const uint32_t* arr, size_t size)
 
 void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t ignore[]) 
 {   
-    // Začátek měření času
-    auto start = std::chrono::high_resolution_clock::now();
-
-    cout << "poradi " << poradi<<endl;
     //Ukonči tvoření heapu ve správnou chvíli
     if (sizehalfheap-1-poradi < 1)
     {
@@ -30,7 +26,7 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t 
     uint32_t heapinddex = sizehalfheap-poradi-1;
 
     //Sestav pole, kde budou přidána minima co se mají v ignorovat kvůli správnému sestavení heapu
-    uint32_t ignore_minima[256] = {0};
+    uint32_t ignore_minima[sizehalfheap] = {0};
 
     //Index prvku, který je aktuálním minimem se bude ignorovat a místo minima se vloží index rodiče
     ignore[poradi*2] = heap[0];
@@ -47,8 +43,8 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t 
             if(heap[j] < find_min)
             {   
                 //Pokud už nebylo minimum použito pro řazení / není přepsáno indexy - beru ho
-                bool isin1 = isin(j, ignore, 512);
-                bool isin2 = isin(j, ignore_minima, 256);
+                bool isin1 = isin(j, ignore, sizehalfheap*2);
+                bool isin2 = isin(j, ignore_minima, sizehalfheap);
                 if (!isin1 && !isin2)
                 {
                     find_min = heap[j];
@@ -60,18 +56,12 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t 
         heap[i] = heapinddex;
         ignore_minima[i] = heapinddex;
     }
-      // Konec měření času
-    auto end = std::chrono::high_resolution_clock::now();
 
-    // Výpočet trvání úseku kódu v milisekundách
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "Úsek kódu trval " << duration.count() << " milisekund." << std::endl;
-    
     //Hledání dalšího nejnižšího prvku (musela být předělána heapa, proto podobný kod podruhý)
     heapinddex = sizehalfheap-poradi-1;
     ignore[poradi*2+1] = heap[0];
     uint32_t extracted_min2 = heap[heap[0]];
-    fill(ignore_minima, ignore_minima + 256, 0);
+    fill(ignore_minima, ignore_minima + sizehalfheap, 0);
 
     //Sečtení dvou minim, uložení na konec heapy, odkaz na toto minimum na původní místo druhého minima a také na první místo heapy
     extracted_min = extracted_min + extracted_min2;
@@ -86,8 +76,8 @@ void heapwork(uint32_t heap[], uint32_t sizehalfheap, uint32_t poradi, uint32_t 
         {
             if(heap[j] < find_min)
             {
-                bool isin1 = isin(j, ignore, 512);
-                bool isin2 = isin(j, ignore_minima, 256);
+                bool isin1 = isin(j, ignore, sizehalfheap*2);
+                bool isin2 = isin(j, ignore_minima, sizehalfheap);
                 if (!isin1 && !isin2)
                 {
                     find_min = heap[j];
@@ -235,11 +225,9 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
    
     
 
-    uint32_t empty[512] = {0};
+    uint32_t empty[velikostpole*2] = {0};
     //Na heapě udělej všechny přesuny a vypočítej délky
     heapwork(heap, velikostpole, 0, empty);
-
-
     vypocetdelek(heap, velikostpole);
 
 
@@ -284,7 +272,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
             rozdilne_delky[i] = delky_sorted[i]; 
         }
     }
-    cout << "rozdilne_delky_counter " << +rozdilne_delky_counter <<endl;
+    //cout << "rozdilne_delky_counter " << +rozdilne_delky_counter <<endl;
     uint16_t nenulove_delky_counter = 0;
     uint16_t nenulove_suma= 0;
     uint8_t velikosdtpole_poctydelek=0;
@@ -386,5 +374,5 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     volnebity = 8 - volnebity;
     fout.write(reinterpret_cast<const char*>(&volnebity), 1);
     fout.close();
-    cout << "test " << test << endl;
+    //cout << "test " << test << endl;
 }
