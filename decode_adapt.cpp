@@ -4,6 +4,7 @@
 #include "huff_codec.h"
 void Decode_adapt(string inputFile, string outputFile, bool model)
 {   
+    
     uint8_t pocetbloku = 64;
     uint32_t widthValue = 512;
     //uint8_t buffer[256] = {0};
@@ -21,34 +22,44 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
     for(uint32_t j = 0; j < pocetbloku; j++)
     {
         for(uint32_t i = 0; i < pocetbloku; i++)
-        {   bool first_block = true;
-            //cout << "test counter " << test_counter <<",";
+        {  
+            bool first_block = true;
+            cout << "test counter " << test_counter <<",";
             test_counter++;
             //Načtení počtu bytů
             findecode.read(reinterpret_cast<char*>(&pocet_bytu), 1);
             //Načtení prvního bytu, který nám říká počet různých velikostí délek -> velikost pole s počty na jednotlivých pozicích
-            findecode.read(reinterpret_cast<char*>(&pocet_ruznych_kodovych_delek), sizeof(pocet_ruznych_kodovych_delek));
-            
+            findecode.read(reinterpret_cast<char*>(&pocet_ruznych_kodovych_delek), 1);
+            //cout << "POCET RUZNYCH KODOVYCH DELEK " <<pocet_ruznych_kodovych_delek;
             //uint16_t pole_poctydelek[pocet_ruznych_kodovych_delek];
             //uint16_t *pole_poctydelek = new uint16_t[pocet_ruznych_kodovych_delek];
-            uint16_t pole_poctydelek[pocet_ruznych_kodovych_delek]; 
+            uint8_t pole_poctydelek[pocet_ruznych_kodovych_delek]; 
             uint16_t pocetznaku = 0;
 
             //Načtení pole s délkamy slov - index pole říká délku, hodnota počet slov s touto délkou
-            findecode.read(reinterpret_cast<char*>(pole_poctydelek), pocet_ruznych_kodovych_delek*2);
-            
+            findecode.read(reinterpret_cast<char*>(pole_poctydelek), pocet_ruznych_kodovych_delek);
+            cout << "POCET ZNAKU COUNTER " << endl;
             //Pole potřeba projít a posčítat hodnoty prvků pro celkový počet znaků v souboru
             for(uint16_t id = 0; id <pocet_ruznych_kodovych_delek; id++)
             {
                 pocetznaku = pocetznaku + pole_poctydelek[id];
-                //cout << +pole_poctydelek[i] << ",";
+                cout << +pole_poctydelek[i] << ",";
             }
-            //cout << endl;
+            cout << endl;
+            cout << "pocet znaku celkem " <<+pocetznaku << endl;
+
+
             //Načtení znaků které se vyskytují v souboru a budeou dávány na výstup
             //uint8_t *znaky_decode = new uint8_t[pocetznaku];
             uint8_t znaky_decode[pocetznaku];
             //cout << "POCET ZNAKU " << pocetznaku << endl; 
             findecode.read(reinterpret_cast<char*>(znaky_decode), pocetznaku);
+            for(uint32_t id = 0; id < sizeof(znaky_decode); id++)
+            {
+                cout << +znaky_decode[id] << ",";
+            }
+            cout << endl;
+            
             //Zjištění zbývajících bytů v souboru po odečtění hlavičky
             //uint8_t *decode_bytes = new uint8_t[pocet_bytu];
             uint8_t decode_bytes[pocet_bytu];
@@ -57,28 +68,24 @@ void Decode_adapt(string inputFile, string outputFile, bool model)
             //Načtení zbytku souboru
             findecode.read(reinterpret_cast<char*>(decode_bytes), pocet_bytu);
             
-            // cout << "DELKY ";
-            //  for(uint32_t id = 0; id < pocet_ruznych_kodovych_delek; id++)
-            // {
-            //     cout << pole_poctydelek[id] << ",";
-            // }
-            // cout << endl;
+            cout << endl;
+            cout << "DELKY ";
+             for(uint32_t id = 0; id < pocet_ruznych_kodovych_delek; id++)
+            {
+                cout << +pole_poctydelek[id] << ",";
+            }
+            cout << endl;
 
-            // cout << "BYTY final ";
-            // for(uint32_t id = 0; id < pocet_bytu; id++)
-            // {
-            //     cout << +decode_bytes[id] << ",";
-            // }
-            // cout << endl;
-            //  cout << "TEST COUONTER  " << test_counter<<endl;
+            cout << "BYTY final ";
+            for(uint32_t id = 0; id < pocet_bytu; id++)
+            {
+                cout << +decode_bytes[id] << ",";
+            }
+            cout << endl;
 
             //Kolik užitečných bitů bude použito v posledním bytu
             uint8_t pocet_uzitecnych_posledni_byte = decode_bytes[pocet_bytu-1];
-            // cout << "POCET BYTU " <<+pocet_bytu << " POSLEDNI " <<+pocet_uzitecnych_posledni_byte <<endl;
-            // cout << "POCET ruznych kodovych delek " <<+pocet_ruznych_kodovych_delek<<endl;
 
-           
-           
             //Vytvoření firstCode a firstSymbol dle přednášky
             uint32_t firstCode[pocet_ruznych_kodovych_delek+1] = {0};
             //uint32_t *firstCode = new uint32_t[pocet_ruznych_kodovych_delek+1];

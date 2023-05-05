@@ -107,6 +107,7 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
                             prev = znaky_decode[firstSymbol[l-1] + c -firstCode[l-1]];
                             first = false;
                             counter++; 
+                            cout << "FIRST " <<  +prev;
                         }
                         else
                         {   
@@ -118,11 +119,11 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
                             counter++; 
                             //cout << counter << " ";
                         }
-                    //28 30 29 31
 
                     //finalout.write((char*)&prev, 1);
                     //write nějak nešel
                     finalout.put(prev);
+                    //cout << +prev << ",";
                     }
                     else
                     {   
@@ -139,4 +140,5 @@ void Decode(string inputFile, string outputFile, bool model, bool adapt)
     delete[]  firstCode;   
     delete[]  firstSymbol;  
     finalout.close();    
+    cout << counter << endl;
 }

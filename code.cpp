@@ -164,8 +164,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         //Kdyz pocitas diff rovnou a ukladas do cenosti, tak to kdovi proc nefunguje TODO
         uint8_t *save = new uint8_t[size];
         save[0] = buffer[0];
-
-        for (int i = 1; i < size; i++) save[i] = buffer[i] - buffer[i-1];
+        for (int i = 1; i < size; i++)  save[i] = buffer[i] - buffer[i-1];
         for(int j = 0; j < size; j++) buffer[j] = save[j];
         delete [] save;
     }
@@ -199,7 +198,6 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
             offset_index++;
         }
     }
-
     uint32_t velikostpole = nenulove_cetnosti;
     uint32_t cet_sort[velikostpole] = {0};
     uint32_t heap[velikostpole*2] = {0};
@@ -222,10 +220,8 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         heap[i] = index_value+velikostpole;
     }
 
-   
-    
-
     uint32_t empty[velikostpole*2] = {0};
+    
     //Na heapě udělej všechny přesuny a vypočítej délky
     heapwork(heap, velikostpole, 0, empty);
     vypocetdelek(heap, velikostpole);
@@ -294,7 +290,7 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
         pole_poctydelek[i] = poctydelek[i];
     }
 
-    if (velikosdtpole_poctydelek==1) pole_poctydelek[0] = 1;
+    if (velikosdtpole_poctydelek==1  && velikostpole == 1) pole_poctydelek[0] = 1;
 
     ofstream fout(outputFile, ios::binary | ios::trunc);
     fout.write(reinterpret_cast<const char*>(&velikosdtpole_poctydelek), sizeof(velikosdtpole_poctydelek)); 
@@ -305,8 +301,8 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     uint8_t volnebity = 8;
 
     //Osetreni pro pripad, ze se tam vyskystuje pouze jeden znak (jindy to nefunguje, netusim proc)
-    if (velikosdtpole_poctydelek==1)
-    {
+    if (velikosdtpole_poctydelek==1 && velikostpole == 1)
+    {   
         for(uint32_t  i = 0; i <size; i++) 
         {   
             volnebity--;
@@ -339,12 +335,10 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     uint8_t lenght =0;
     uint8_t in = 0;
     bool msb;
-    int test = 0;
     //Procházej všechny načtené znaky
     for(uint32_t  i = 0; i< size; i++) 
     {      
         //Najdi index, najdi kod a jeho delku
-        test++;
         in = returnIndex(indexy_sort_delky,buffer[i],sizeof(indexy_sort_delky));
         huff_value = huffmancode[in];
         lenght = delky_sorted[in];
@@ -374,5 +368,4 @@ void Code(string inputFile, string outputFile, uint16_t widthValue, bool model, 
     volnebity = 8 - volnebity;
     fout.write(reinterpret_cast<const char*>(&volnebity), 1);
     fout.close();
-    //cout << "test " << test << endl;
 }

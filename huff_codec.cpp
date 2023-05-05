@@ -56,9 +56,15 @@ int main(int argc, char **argv){
                 break; 
         }
      }
-    if (!comp && !decomp && !model && !adapt) 
+    if (!comp && !decomp) 
     {
-        cout << "Nebyl zadán žádný z přepínačů -c -d -m -a" << endl;
+        cout << "Nebyl zadán žádný z přepínačů -c -d" << endl;
+        return 0;
+    }
+
+    if (comp && decomp) 
+    {
+        cout << "Byly zadány oba přepínače -c -d" << endl;
         return 0;
     }
 
