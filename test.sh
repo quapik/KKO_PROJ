@@ -21,7 +21,7 @@ TIMEFORMAT=%R
 echo "------------------------------------------"
 echo -e "${BLUE}Running tests for huff_codec${NC}"
 echo "------------------------------------------"
-POSSIBLEFLAGS=("" "-m")
+POSSIBLEFLAGS=("" "-m" "-a" "-m -a")
 #POSSIBLEFLAGS=("" "-m" "-a" "-m -a")
 ALLFILES=()
 
